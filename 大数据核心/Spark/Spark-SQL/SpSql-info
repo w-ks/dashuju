@@ -1,0 +1,239 @@
+1.Spark SQL JOIN操作
+        Inner Join : 内连接；
+        Full Outer Join : 全外连接；
+        Left Outer Join : 左外连接；
+        Right Outer Join : 右外连接；
+        Left Semi Join : 左半连接；
+        Left Anti Join : 左反连接；
+        Natural Join : 自然连接；
+        Cross (or Cartesian) Join : 交叉 (或笛卡尔) 连接。
+
+        avg() 平均数
+
+        
+
+2.main
+        1.spark-sql 核心
+        (1)
+                val conf: SparkConf = new SparkConf().setMaster("local[*]").setAppName("")
+                                                ！！！注意SS.builder()
+                val session: SparkSession = SparkSession.builder().config(conf).getOrCreate()
+                val sc = spark.sparkContext
+
+                
+                sc.setLogLevel("WARN")
+                        !!!注意此处    .option 设置属性                header  delimiter
+                val df = spark.read.format("csv")).
+                                                option("header","true").   // 设置读取csv文件自带表头
+                                                option("sep",",").
+                                                option(“interSchema”,“true”).
+                                                load("xx.csv"
+                                                                        指定表头：option(“header”, “true”)
+                                                                        指定分隔符：option(“sep”, “;”)
+                                                                        类型自动推测：option(“interSchema”,“true”)
+
+                val df1 = df.toDF()  # 如果已设置自带表头通过toDF也可强行修改表头   # csv -> DF 
+
+
+                session.close()
+
+                (1)spark-sql 为了简化RDD的开发（RDD封装）
+                写sql语句时把封装好的模型转化为RDD
+                模型有两个（DataFrame，DataSet）
+                DataFrame 类似于传统数据库中的二维表格
+
+                (2)DataSet 是具有强类型的数据集合，需要提供对应的类型信息。
+                通过样例类
+                toDS
+        (2)
+                (1) 读取文件
+                1.session.read.json[csv...]
+
+                        load data local inpath ['data/id.txt'] into table [user]
+
+                        hdfs系统 hdfs://master:9000/diliveryoutput
+                        linux本地 file:///usr/local/....
+
+                (2) 类型转换  (.rdd .toDF .toDs)
+                        DF => DSL语法
+                                df.select([col=]"age").show()
+                        DataFrame <=> DataSet
+                                df.as[Case class]       df => DS [.as[样例类] ]
+                                ds.toDF()               Ds => df toDF
+                        RDD <=> DataSet
+                                rdd => DS  map{} 将元素转为样例类.toDs
+                                rdd.map{case (id, name, age) => {User(id, name, age)}.toDs
+                                DS => rdd
+                                ds.rdd
+                (3)
+                        createOrReplaceTempView df=>sql
+                        
+                        支持 desc table t1
+
+3. 自定义UDF函数
+        (1)
+                1. import sparkSession.implicits._ 隐式转换 如果涉及到转换操作，需要引入转换规则
+
+                2. spark.udf.register("name",逻辑) 自己声明函数
+
+                3. session.udf.register("FName",(a:mutable.WrappedArray][))
+
+                (1).举例 返回数组内元素的和
+                        session.udf.register("udfName",名字:类型 => 返回结果)
+                        session.udf.register("sumArr", (arr: mutable.WrappedArray[String]) => {
+                                var sum1 = 0.0
+                                for (i <- arr) {sum1 += i.toDouble }
+                                sum1
+                        })
+                                sqlContext.udf.register("sexToNum", (sex: String) => {
+                                        sex.toUpperCase match {
+                                        case "M" => 0
+                                        case "F" => 1
+                                        case _ => -1
+                                        }
+
+                        ！！！注意给定输入类型时 必须是sql里的类型 mutable.WrappedArray[String] 指定Str
+
+4. 在一定条件下，RDD中存放的是一个个样例类，或者sparkSQL转换过来的RDD，就可以使用getAs方法获取样例类里指定字段的值
+
+                getAs[T] 可rdd map单列选择后类型转换
+                比如一个DS转换成的RDD
+                需要在getAs后面加上类型
+                意思就是获的rdd里字段名是id的值
+
+                val rdd = DateSet.rdd.map{ x=> x.getAs[Long]("id") }
+
+
+5. 官方案例骚操作 太骚了！！
+        1. aggregate 数组内元素聚合   对初始状态和数组中的所有元素应用二进制运算符，并将其简化为单个状态。最终状态通过应用finish函数转换为最终结果。
+                SELECT aggregate(array(1, 2, 3), 0, (acc, x) -> acc + x);     6
+                SELECT aggregate(array(1, 2, 3), 0, (acc, x) -> acc + x, acc -> acc * 10);    60
+        2. transform(expr, func) - 使用函数转换数组中的元素。
+                SELECT transform(array(1, 2, 3), x -> x + 1);   [2,3,4]
+
+        3.时间操作
+                current_date() - 返回查询评估开始时的当前日期
+                current_timestamp - 返回查询评估开始时的当前时间戳。
+                date_format(timestamp, fmt) - 转换timestamp为日期格式指定格式的字符串值fmt  > SELECT date_format('2016-04-08', 'y');   2016
+                
+
+        end.数组操作     基于spark 2.4
+                array() 创建数组
+                array_contains() 数组包含 SELECT array_contains(array(1, 2, 3), 2);   true
+                array_distinct() 数组去重 SELECT array_distinct(array(1, 2, 3, null, 3));  [1,2,3,null]
+                array_except() 返回两个数组中第一个数组独有的元素  SELECT array_except(array(1, 2, 3), array(1, 3, 5));   [2]
+                array_intersect() 数组交集 SELECT array_intersect(array(1, 2, 3), array(1, 3, 5));  [1,3]
+                array_max()     数组最大值
+                array_min()     数组最小值
+                array_position(array, element)  返回数组element索引的元素 基于1
+                array_remove(arr,elem)  数组移除所有等于element的元素
+                array_sort()    数组排序
+                array_union()     返回由array1和array2的并集元素组成的数组，不包含重复项。
+                transform()
+
+
+        array_max(array) - 返回数组中的最大值。NULL 元素被跳过。 同样array_min(array)
+                SELECT array_max(array(1, 20, null, 3));     20
+
+        array_position(array, element) - 返回数组第一个元素的（基于 1 的）索引作为 long。
+                SELECT array_position(array(3, 2, 1), 1);       3
+
+        expr1 [NOT] BETWEEN expr2 和 expr3 - 评估是否expr1[not] 在expr2和之间expr3。
+                SELECT col1 FROM VALUES 1, 3, 5, 7 WHERE col1 BETWEEN 2 AND 5;    3 5
+
+        cbrt(expr) - 返回 的立方根expr。
+                SELECT cbrt(27.0);    3
+
+        count(DISTINCT expr[, expr...]) - 返回提供的表达式唯一且非空的行数。
+                SELECT count(DISTINCT col) FROM VALUES (NULL), (5), (5), (10) AS tab(col);     2
+        
+        select arr[0]+arr[1]+arr[2] from (SELECT (array(1, 2, 3)) arr) o1
+
+        factorial(expr) -  返回 的阶乘expr。expr是 [0..20]。否则，为空。
+                SELECT factorial(5);     120
+
+        first(expr[, isIgnoreNull]) - 返回expr一组行的第一个值。如果isIgnoreNull为真，则仅返回非空值。
+                SELECT first(col) FROM VALUES (10), (5), (20) AS tab(col);   10
+
+
+        flatten(arrayOfArrays) - 将数组数组转换为单个数组。
+                SELECT flatten(array(array(1, 2), array(3, 4)));      [1,2,3,4]
+
+        float(expr) - 将值expr转换为目标数据类型float。
+
+        format_number(expr1, expr2) - 将数字格式化为expr1'#,###,###.##'，四舍五入到expr2 小数位。如果expr2为 0，则结​​果没有小数点或小数部分。 expr2也接受用户指定的格式。这应该像 MySQL 的 FORMAT 一样起作用。
+                SELECT format_number(12332.123456, 4);     12,332.1235
+                SELECT format_number(12332.123456, '##################.###');   12332.123
+
+        format_string(strfmt, obj, ...) - 从 printf 样式的格式字符串返回格式化的字符串。
+                SELECT format_string("Hello World %d %s", 100, "days");    Hello World 100 days
+
+        sequence(start, stop, step) - 生成`从开始到停止（包括）的元素数组，逐步递增。返回元素的类型与参数表达式的类型相同。
+
+        支持的类型有：byte、short、integer、long、date、timestamp。
+
+        start 和 stop 表达式必须解析为相同的类型。如果 start 和 stop 表达式解析为 'date' 或 'timestamp' 类型，则 step 表达式必须解析为 'interval' 类型，否则为与 start 和 stop 表达式相同的类型。
+
+        参数：
+
+        开始 - 一个表达式。范围的开始。
+        停止 - 一个表达。结束范围（包括）。
+        step - 可选表达式。范围的步长。默认情况下，如果 start 小于或等于 stop，则 step 为 1，否则为 -1。对于时间序列，分别为 1 天和 -1 天。如果 start 大于 stop 则步长必须为负，反之亦然。
+        例子：
+
+        > SELECT sequence(1, 5);
+        [1,2,3,4,5]
+        > SELECT sequence(5, 1);
+        [5,4,3,2,1]
+        > SELECT sequence(to_date('2018-01-01'), to_date('2018-03-01'), interval 1 month);
+        [2018-01-01,2018-02-01,2018-03-01]`
+
+
+        spark： 3.0.0
+                extract
+                        extract(field FROM source) - 提取日期/时间戳或间隔源的一部分。
+
+                        参数：
+
+                        字段 - 选择应提取源的哪一部分
+                        field日期和时间戳支持的字符串值是（不区分大小写）：
+                        "YEAR", ("Y", "YEARS", "YR", "YRS") - 年份字段
+                        "YEAROFWEEK" - 日期时间所属的 ISO 8601 周编号年份。例如，2005-01-02 是 2004 年第 53 周的一部分，因此结果是 2004
+                        "QUARTER", ("QTR") - 日期时间所在年份的季度 (1 - 4)
+                        "MONTH", ("MON", "MONS", "MONTHS") - 月份字段 (1 - 12)
+                        "WEEK", ("W", "WEEKS") - ISO 8601 基于周的年数。一周被认为是从星期一开始，第 1 周是第 3 天的第一周。在 ISO 周编号系统中，1 月初的日期可能是上一年第 52 或 53 周的一部分，而 12 月下旬的日期可能是下一年第一周的一部分。例如，2005-01-02 是 2004 年第 53 周的一部分，而 2012-12-31 是 2013 年第一周的一部分
+                        "DAY", ("D", "DAYS") - 月份字段 (1 - 31)
+                        "DAYOFWEEK",("DOW") - 日期时间为星期日（1）到星期六（7）的星期几
+                        "DAYOFWEEK_ISO",("DOW_ISO") - 基于 ISO 8601 的日期时间为星期一（1）到星期日（7）
+                        "DOY" - 一年中的一天 (1 - 365/366)
+                        "HOUR", ("H", "HOURS", "HR", "HRS") - 小时字段 (0 - 23)
+                        "MINUTE", ("M", "MIN", "MINS", "MINUTES") - 分钟字段 (0 - 59)
+                        "SECOND", ("S", "SEC", "SECONDS", "SECS") - 秒字段，包括小数部分
+                        的支持的字符串值field的区间（它由months，days，microseconds）为（不区分大小写）：
+                        "YEAR", ("Y", "YEARS", "YR", "YRS") - 总数months/ 12
+                        "MONTH", ("MON", "MONS", "MONTHS") - 总数months% 12
+                        "DAY", ("D", "DAYS") -days区间的一部分
+                        "HOUR", ("H", "HOURS", "HR", "HRS") -microseconds包含多少小时
+                        "MINUTE", ("M", "MIN", "MINS", "MINUTES") - 几小时后还剩多少分钟 microseconds
+                        "SECOND", ("S", "SEC", "SECONDS", "SECS") - 用几小时和几分钟后剩下多少秒 microseconds
+                        source - 应从何处field提取日期/时间戳或间隔列
+                        例子：
+
+                        > SELECT extract(YEAR FROM TIMESTAMP '2019-08-12 01:00:00.123456');
+                        2019
+                        > SELECT extract(week FROM timestamp'2019-08-12 01:00:00.123456');
+                        33
+                        > SELECT extract(doy FROM DATE'2019-08-12');
+                        224
+                        > SELECT extract(SECONDS FROM timestamp'2019-10-01 00:00:01.000001');
+                        1.000001
+                        > SELECT extract(days FROM interval 1 year 10 months 5 days);
+                        5
+                        > SELECT extract(seconds FROM interval 5 hours 30 seconds 1 milliseconds 1 microseconds);
+                        30.001001
+                        笔记：
+
+                提取函数等效于date_part(field, source)。
+
+
+

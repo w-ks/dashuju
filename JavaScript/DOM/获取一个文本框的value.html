@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>获取一个文本框的value</title>
+
+
+</head>
+
+<body>
+
+    <script>
+        window.onload = function() {
+            // users.value获得value
+            var users = document.getElementById('username')
+
+            var bt1 = document.getElementById('btn')
+            bt1.onclick = function() {
+                alert('获取用户名' + ':' + users.value)
+            }
+        }
+    </script>
+    用户名:<input type="text" id="username">
+    <input type="button" value="获取用户名" id="btn">
+</body>
+
+</html>

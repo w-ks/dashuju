@@ -1,0 +1,206 @@
+pandas
+
+1.Pandas 数据结构 - DataFrame
+
+        pd.DataFrame()   index 行名， columns 列名。
+           
+        (1) 属性
+            df.shape  # 行数 列数
+
+            df.dtypes  # 列数据类型
+            
+            df.ndim   # 数据维度
+            
+            df.index   # 行索引
+            
+            df.columns  # 列索引 可查看列名
+            
+            df.values   # 对象值,二维ndarray数组
+            
+            rename # 更改行名 可指定自定义函数  也可指定映射
+                 s.rename(lambda x: x ** 2)  # function, changes labels
+                 s.rename({1: 3, 2: 5})  # mapping, changes labels
+            
+            构造dataframe数组 3*4
+                pd.DataFrame(np.arange(12).reshape((3, 4)))
+
+            (2) DataFrame整体情况查询
+            
+                df.head(3)  # 显示头部几行,默认5行
+            
+                df.tail(3)  # 显示末尾几行,默认5行
+            
+                df.info()   # 相关信息概览:行数,列数,列索引,列非空值个数,列类型,列类型,内存占用
+            
+                df.describe()   #快速综合统计结果:计数,均值,标准差,最大值,四分位数,最小值
+
+        (2) 数据类型
+            astype('int') 选定列后可指定强转类型
+
+        (3) 结构操作
+            sort_values by 通过哪几(一)列排序, ascending[] 默认升序  False降序  inplace 是否替换原数据
+            
+            sort_values(by=['K1','K2'],ascending=['False','False'],inplace=True)
+            
+            多列选取  双扩号包裹  data[['K1','K2']]
+            loc 通过标签索引 行数据,切片  data[1:['K1','K2]]  data.loc[data['列四']==138,['列二','列三','列四']] #loc的条件筛选
+            iloc 通过位置索引 行数据    data.iloc[0:3] #按照位置取数据   data.iloc[1:8,[1,5]] #取出索引为1到7的行，索引为1和5的列。
+            
+            bool索引  选择df中符合结果的所有行 data2=data1[data1['C'] =='北京']
+            
+            reset_index(drop=False) 重置索引 默认保留原索引 drop=True 不保留    数据清洗时，会将带空值的行删除，此时DataFrame或Series类型的数据不再是连续的索引，可以使用reset_index()重置索引
+            
+            concat([],axis)     连接 表 可指定轴
+
+drop操作
+    drop 默认删除行 可指定axis=1删除列
+        df.drop('成交数量',axis=1)
+    index 可以根据行号删除记录，比如删除第三行 !注意，这个办法其实不是按照行号删除，而是按照索引删除。如果index为3，则会将前4条记录都删除。这个方法支持一个范围，以及用负数表示从末尾删除。
+        df.drop(df.index[7])
+    bool 删除特定数值的行(删除成交金额小于10000) 本例其实是筛选，如果需要保留，可以将筛选后的对象赋值给自己即可。
+        df[ df['成交金额'] > 10000]
+    contains 删除某列包含特殊字符的行   匹配列中包含再进行取反
+         df[ ~ df['证券名称'].str.contains('联通') ]
+
+
+
+
+
+2. 过滤数据，使用DataFrame.dtypes查看数据类型
+    df1[df1["age"] > 30]
+    
+    df1[(df1["age"] > 30) & (df1["money"] < 600)], df1[(df1.age > 40) & (df1.money < 600)]
+    
+    isin 
+    
+    df1[df1["name"].isin(["amazon", "youtube"])]
+
+3. 索引 根据index 和col获得index=2015 col["salary]>100
+    df2 = df1[(df1.index==20100523) & (df1["BoxOfficeReturn"]>100000)]['film']
+
+
+3. 分组聚合统计函数
+    groupBy 分组
+    分组后聚合 agg 可传入多参数
+    data.agg({'B':'mean','C':'sum'})#B列均值，C列汇总  分组后，可以对不同的列采用不同的聚合方法
+    
+    transform 转换 返回和对应列相同行数的聚合
+    
+    min
+    max
+    sum
+    mean 均值
+    median  中位数
+    std 标准差
+    var 方差
+    count
+    mean 均值 Series可指定轴axis=0
+    unique 唯一列表 返回去重后列的列表
+
+
+4. 关于nan的操作
+    s1.isnull()和s1.notnull() : 检测是否是空值
+    s1.dropna() 丢弃有nan的索引项，
+        axis 可指定删除行还是列 how 如果等于any 则任何值为空都删 all全空删
+        inplace 修改当前df
+        thresh 缺失值的数量大于thresh，将删除
+    print(df4.dropna(axis=1, thresh=3))
+    print("-----缺失值的数量大于thresh，将删除---------")# 如果缺失值的数量大于thresh，将删除
+    将nan填充为其他值，df2.fillna() value 用于填充的值，可以是单个值，或者字典（key是列名，value是值）
+                method 为ffill前一个不为空的值填充;等于bfill使用后一个不为空的值填充backword fill
+
+
+
+5. 关于字符串的操作
+     cat        实现元素级的字符串连接操作,可指定分隔符
+    
+     contains   返回表示各字符串是否含有指定模式的布尔型数组
+     count      模式的出现次数
+    
+     endswith、startswith    相当于对各个元素执行x.endswith(pattern)或  x.startswith(pattern)
+    
+     findall    计算各字符串的模式列表
+    
+     get        获取各元素的第i个字符
+    
+     join       根据指定的分隔符将 Series中各元素的字符串连接起来
+     len        计算各字符串的长度
+     lower、upper  转换大小写。相当于对各个元素执行x.lower()或x.upper()
+    
+     match      根据指定的正则表达式对各个元素执行 re.match
+    
+     pad        在字符串的左边、右边或左右两边添加空白符
+    
+     center     相当于pad(side="both")
+    
+     repeat     重复值。例如. s.str.repeat(3)相当于对各个字符串执行x * 3
+    
+     replace    用指定字符串替换找到的模式
+    
+     slice      对 Series中的各个字符串进行子串截取
+    
+     split      根据分隔符或正则表达式对字符串进行拆分
+    
+     strip、rstrip、Istrip    去除空白符,包括换行符。相当于对各个元素执行   x.strip()、x.rstrip()、x.lstrip()
+
+
+
+
+6.重复数据处理
+    
+    df.duplicated(subset=None, keep=‘first’) # 指定列数据重复项判断；
+               "subset=None：列标签或标签序列，可选# 只考虑某些列来识别重复项;默认使用所有列
+                keep=‘first’：{‘first’，‘last’，False}
+                # - first：将第一次出现重复值标记为True  - last：将最后一次出现重复值标记为True  - False：将所有重复项标记为True
+
+        # 返回：指定列重复行boolean Series
+        df.drop_duplicates(subset=None, keep=‘first’, # 删除重复数据 根据指定列删除 可选择保留第几项重复 inplace=False) # 返回：副本或替代
+
+        df.drop(col=["a","b"])
+
+7. 读取详解
+    解决pandas.read_excel() 列数多时会省略行
+         pd.set_option('display.max_columns', None) # 显示所有列
+
+    read_csv
+        filePath 文件路径
+        sep='\t' 字段分割符
+        delimiter  分隔符的另一个名字，与 sep 功能相似。
+        delim_whitespace 设置为 True 时，表示分割符为空白字符
+        header   以第几行为表头下方为数据 设置导入 DataFrame 的列名称，默认为 "infer"，注意它与下面介绍的 names 参数的微妙关系
+        names    指定列名
+                 names=["编号", "姓名", "地址", "日期"])
+                 当names没被赋值时，header会变成0，即选取数据文件的第一行作为列名。
+                 当 names 被赋值，header 没被赋值时，那么header会变成None。如果都赋值，就会实现两个参数的组合功能。
+                 我们举例说明：
+                 names 没有被赋值，header 也没赋值：
+        index_col  指定某列为索引[行] 读取文件之后，生成的DataFrame的索引默认是0 1 2 3...，我们当然可以set_index，但是也可以在读取的时候就指定某个列为索引。
+        skiprows skiprows=lambda x: x > 0 and x % 2 == 0 表示过滤行，想过滤掉哪些行，就写在一个列表里面传递给skiprows即可。注意的是：这里是先过滤，然后再确定表头，比如：
+        usecols    如果列有很多，而我们不想要全部的列、而是只要指定的列就可以使用这个参数。
+        prefix="夏色祭" 给每列增加前缀
+        dtype  指定类型 dtype={"col_name": str}
+        converters  converters={"id": lambda x: int(x) + 10} 可以在读取的时候对列数据进行变换：
+        true_values和false_value  指定哪些值应该被清洗为True，哪些值被清洗为False。
+
+8. 写入详情
+    to_csv
+        sep 指定分隔符          sep='?' #使用?分隔需要保存的数据，如果不写，默认是,
+        na_rep 替换空值         na_rep='NA'  #确实值保存为NA，如果不写，默认是空
+        index=False,encoding='utf_8_sig'
+        float_format 格式      float_format='%.2f'  #保留两位小数
+        cols  是否保留某列数据   columns=['name']) #保存索引列和name列
+        header 是否保留列名     header=0  #不保存列名
+        index 是否保留行索引    index=0    #不保存行索引
+
+9.Pandas 数据结构 - Series
+    
+    Pandas Series 类似表格中等一个列（column），类似于 一维数组，可以保存任何数据类型 Series 由索引（index）和列组成，函数如下：
+    pandas.Series( data, index, dtype, name, copy)
+    1.参数说明：
+        data：一组数据(ndarray 类型)。
+        index：数据索引标签，如果不指定，默认从 0 开始。
+        dtype：数据类型，默认会自己判断。
+        name：设置名称。
+        copy：拷贝数据，默认为 False。
+ DataFrame是Series的容器
+            DataFrame的基础属性

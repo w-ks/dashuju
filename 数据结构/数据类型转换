@@ -1,0 +1,31 @@
+Java
+    1. 隐式类型转换：从小类型到大类型，不需要强制转换符
+
+    2. 强制转换符：（需要转换成的类型）变量
+        ### double v = 0.0;
+        ### int v1 = (int) v;   直接加限定符语法
+
+    
+
+        str => int
+            Integer.valueOf(str).intValue();
+        str => int[]
+            a[i]  = str.charAt(i)-'0'; 
+        str => char[]
+            str.toCharArray()
+        int => str
+            Integer.toString(i);
+            => long
+         Long.parseLong()
+
+Python
+    
+    1. 隐式转换
+
+    2. 强制转换
+        float(5)    int => float
+    
+
+Scala
+    list 操作
+

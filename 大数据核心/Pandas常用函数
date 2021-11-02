@@ -1,0 +1,61 @@
+1.  结构操作
+        sort_values
+        loc
+        iloc
+        bool索引
+        isin
+        reset_index(drop=False)
+        concat([],axis)
+
+        head(3)  
+        tail(3)  
+        info()   
+        describe(
+    分组统计
+        groupBy 分组
+        agg 可传入多参数 分组后聚合 
+            data.agg({'B':'mean','C':'sum'})#B列均值，C列汇总  分组后，可以对不同的列采用不同的聚合方法
+        transform 转换 返回和对应列相同行数的聚合
+        
+        排序
+        sort_values(by,ascending,inplace)
+
+        min
+        max
+        sum
+        mean 均值
+        median  中位数
+        std 标准差
+        var 方差
+        count
+        mean 均值 Series可指定轴axis=0
+        unique 唯一列表 返回去重后列的列表
+
+    空值处理
+        isnul，notnull
+        dropna 丢弃有nan的索引项 可指定列或行 
+        fillna value 用于填充的值
+
+    重复数据处理
+        duplicated  指定列数据重复项判断；可选保留第几项重复
+        drop  df.drop(col=["a","b"]) 删除列
+
+2.
+    字符串
+        cat        连接
+        contains   含有
+        count      统计
+        endswith、startswith    
+        findall    
+        get        
+        join       
+        len        
+        lower、upper
+        match      
+        pad        
+        center     
+        repeat     
+        replace    
+        slice      
+        split      
+        strip、rstrip、Istrip 

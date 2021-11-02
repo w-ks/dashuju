@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>void运算符</title>
+</head>
+
+<body>
+    页面顶端
+
+    <!-- <input type="button" value="按钮1" onclick="alert('js代码执行')"> -->
+    <!-- 大部分情况下javascript：是可以省略的 -->
+    <input type="button" value="按钮1" onclick="javascript:alert('js代码执行')">
+
+
+    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+    <!-- 
+        怎样保留超链接样式 点击还不跳转？
+            1.添加href属性
+            2.onclick后面编写js代码，执行
+            3.执行完js代码还必须让页面不跳转
+        
+        关键的位置是：怎么保证不跳转呢？
+            如果没有跳转的路径，他自然就不跳转了
+        
+        href="javascript:void(0)"
+            void运算符执行表达式,但是不返回任何结果:void(表达式) 执行结束之后啥也没有,并且也没有""
+            
+            这样记忆:
+                href后面添加一个: javascript:void(0)
+                表示把href的连接地址废弃掉。
+
+     -->
+    <a href="javascript:void(0)" onclick="alert('执行js代码,并且页面没有跳转!')">要求:保留住超链接的样式,并且点击我执行一段js代码</a>
+
+    <br><br><br><br><br><br><br><br><br><br><br><br>
+
+</body>
+
+</html>

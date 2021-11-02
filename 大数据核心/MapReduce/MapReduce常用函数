@@ -1,0 +1,58 @@
+1.  Java
+
+    toString()  substring(int a [,int b])  Integer.parseInt() Float.parseFloat() Double.parseDouble()
+    Integer.MIN_VALUE() Math.max()  sb.append()
+    replace split replaceAll(old[注意转义],new)
+    values.iterator().next()
+    return this.rank>o.getRank()?-1:1;           // SortBean 降序
+    context.write(values.iterator().next(),key); // reducer筛选x条
+
+2. MapReduce
+
+    new IntWritable() Text()    LongWritable()  NullWritable.get()
+    write()    set()  get()
+    return[可用来剔除]
+    context.getCounter("MY_COUTER", "online");
+
+3. JavaBean
+
+    实现接口
+        implements WritableComparable<SortBean>
+        1. 定义私有变量
+        private Integer rank;
+        2. 实现序列化方法 write readFields
+        dataOutput.writeInt(rank);          <= write
+        this.rank = dataInput.readInt();    <=  readFields
+        3. 快速生成类 重载无参有参类 ctrl+ins
+        public JavaBean(Integer rank) { this.rank = rank; }
+        4. 实现getter/setter
+        public void set(Integer rank){ this.rank = rank; }
+        5. 重写 toString
+        public String toString() {return ""+rank; }
+        6. 实现接口Comparable [降序排序]
+        public int compareTo(SortBean o) { return this.rank>o.getRank()?-1:1; }
+
+
+4.Main
+
+    模版代码
+
+            Configuration conf = new Configuration();
+
+            Job job =Job.getInstance(conf);
+
+            job.setJarByClass(MAXdegree.class);
+            job.setMapperClass(MaxDegree.MAXdegree.DegreeMapper.class);
+            job.setReducerClass(MaxDegree.MAXdegree.DegreeReducer.class);
+
+            job.setMapOutputKeyClass(Text.class);
+            job.setMapOutputValueClass(IntWritable.class);
+
+            job.setOutputKeyClass(Text.class);
+            job.setOutputValueClass(IntWritable.class);
+
+            FileInputFormat.setInputPaths(job,"/weather/text.text");
+            FileOutputFormat.setOutputPath(job,new Path("/maxTem"));
+
+            boolean b = job.waitForCompletion(true);
+            System.exit(b?0:1);

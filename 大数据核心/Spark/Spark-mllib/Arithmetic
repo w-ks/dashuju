@@ -1,0 +1,171 @@
+？？ 朴素的贝叶斯 向量机
+    加载模型 load
+    Exception in thread "main" java.lang.NoSuchMethodException: org.apache.spark.ml.clustering.KMeansModel.<init>(java.lang.String)
+        at java.lang.Class.getConstructor0(Class.java:3082)
+        at java.lang.Class.getConstructor(Class.java:1825)
+        at org.apache.spark.ml.util.DefaultParamsReader.load(ReadWrite.scala:337)
+        at org.apache.spark.ml.util.MLReadable$class.load(ReadWrite.scala:227)
+        at org.apache.spark.ml.clustering.KMeans$.load(KMeans.scala:342)
+    交叉验证等 超参
+    
+    RegressionEvaluator 用于回归预测的问题
+
+    BinaryClassificationEvaluator 用于二分类问题
+        scoreAndLabels  评分和标签
+        areaUnderROC 
+
+1.  五种分类算法：Classification - 我们设法预测离散值的属性 二分类多分类
+
+    ·决策树分类法，  DecisionTreeClassifier  注意设置 setImpurity("gini"|"entropy") setMaxBins
+    ·随机森林分类法，  RandomForestClassifier  setNumTrees(10)
+    ·朴素的贝叶斯分类算法    NaiveBayes      .setModelType("multinomial")
+    ·逻辑回归分类，  LogisticRegression      .setRegParam(0.3).setElasticNetParam(0.8).setMaxIter(10)    
+    ·基于支持向量机(SVM)的分类器， SVMWithSGD 基于RDD 
+    
+    (traindatas, numIterations=100)      model.clearThreshold()   
+            val scoreAndLabels = test.map { point =>
+            val score = model.predict(point.features)
+            (score, point.label)}
+             // Get evaluation metrics.
+            val metrics = new BinaryClassificationMetrics(scoreAndLabels)
+            val auROC = metrics.areaUnderROC()
+    ·神经网络法，
+    ·k-最近邻法 (kNN)
+    ·模糊分类法
+
+2.1   回归算法  Regression - 我们设法预测连续值的属性
+    ·线性回归   LinearRegression  setStandardization(true).setMaxIter(10)
+                    .setSolver("l-bfgs") 
+                    "系数为 " + model.coefficients
+                    "截距为 " + model.intercept
+                    summary = model.summary
+                    println("训练集平均绝对误差MAE = " + summary1.meanAbsoluteError)
+                    println("训练集均方误差MSE = " + summary1.meanSquaredError)
+                    println("训练集均方误差R2 = " + summary1.r2)
+                    println("训练集均方根误差RMSE = " + summary1.rootMeanSquaredError)
+    ·线性回归
+                //ML目前支持的回归模型：
+                //Linear regression 线性回归
+                //Generalized linear regression 广义线性回归
+                //Decision tree regression 决策树回归
+                //Random forest regression 随机森林回归
+                //Gradient-boosted tree regression梯度提高树回归
+                //Survival regression生存回归
+                //Isotonic regression保存回归
+
+2.  三种聚类 - 无监督学习
+
+    k均值聚类 (KMeans)  .setK(5).setMaxIter(2000).setInitMode("k-means||")
+        computeCost
+    密度聚类和层次聚类 
+    "鸡尾酒会算法" 
+
+3.  特征工程
+
+    特征选择，特征表达和特征预处理。
+
+4.  基本数据类型：
+
+    ·本地向量:稠密向量稀疏向量
+    ·本地矩阵:稠密矩阵―稀疏矩阵
+
+
+ML指南
+MLlib是Spark的机器学习(ML)库。它的目标是让实际的机器学习变得可扩展和容易。在高层次上，它提供了如下工具:
+    (1)机器学习工具        
+        ML Algorithms (ML算法): 常见的学习算法，如分类、回归、聚类和协同过滤
+        Featurization (特征化): 特征提取、变换、降维和选择
+        Pipelines: 用于构造、评估和调优ML管道的工具
+        Persistence (持久性): saving and load algorithms, models, and Pipelines
+        Utilities (实用工具): 线性代数、统计学、数据处理等.
+
+计算数据相关性
+    1.Pearson 相关系数 [-1,1] 越接近0相关性越弱 反之
+    2.spearman系数
+            Correlation.corr(df, "features", "spearman").head 
+
+   2 特征转换
+        这些特征大部分是分类特征，有些值是连续型，如气温、湿度等特征，使用决策树回归时，
+        技术上可以通过给定类别个数的最大值，自动识别哪些特征作为类别特征，哪些作为连续性特征。
+        这里把不同值小于或等于24的特征作为类别特征，大于24的视为连续性特征，并对分类特征索引化或数值化
+                val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(24)
+        如果使用线性回归 需要对类别使用OneHotEncoder转换二元向量
+
+
+数据预处理
+    StringIndexer           字符串数值化
+    OneHotEncoderEstimator  
+    MinMaxScaler
+    getAs[T]
+    VectorAssembler
+    transform
+    randomSplit
+    evaluate
+    模型评估
+    coefficientStandardErrors 标准差  (方差的算术平方根) σ(xgema) 数据离散程度 
+    degreesOfFreedom           自由度 (计算某一统计量是取值不受限制的变量个数)
+    devianceResiduals          偏差残差 ()  δ
+    explainedVariance         解释方差
+    meanAbsoluteError          平均绝对误差
+    meanSquaredError           均方误差
+    numInstances                数量实例
+    pValues                    p值
+    r2                         判定系数，也称为拟合优度，越接近1越好 
+    r2adj
+    residuals                  残差.show
+    rootMeanSquaredError        均方根误差
+    numIterations               迭代次数
+    objectiveHistory            客观历史
+    explainParams              解释参数
+    
+    熵权法
+
+    new Tokenizer 分词器 设置输入列和输出列 进行分词到数组
+
+    randomSplit 数据集划分
+    StringIndexer
+    IndexToString 将测试集预测的索引类别标签转变回字符串类型的 
+        注意 ！！ setLabels 设置  标签列(stingIndexModel.labels) 输入列 输出列 
+        与StringIndexer对称的是，IndexToString将标签索引列映射回包含字符串的原始标签列。一个常见的用例是使用StringIndexer从标签中生成索引，使用这些索引训练模型，并使用IndexToString从预测索引的列中检索原始标签
+评估函数的确定
+    Spark提供了三种评估函数：
+
+    RegressionEvaluator 用于回归预测的问题
+
+    BinaryClassificationEvaluator 用于二分类问题
+        scoreAndLabels  评分和标签
+        areaUnderROC 
+    
+    MulticlassClassificationEvaluator用于多分类问题
+        new MulticlassClassificationEvaluator().setMetricName("accuracy").evaluate(testPre)
+        注意！！！ 设置 setMetricName("accuracy")
+    ClusteringEvaluator 聚类评估 evaluator.evaluate(df)
+
+    模型评分
+    网盘 -> 菜菜 
+
+提取、转换和选择特征
+    提取：从“原始”数据中提取特征 转换：缩放、转换或修改特征  选择：从更大的特征集中选择一个子集
+    Locality Sensitive Hashing (LSH)：这类算法将特征转换的各个方面与其他算法相结合。
+1.TF-IDF
+    词频-逆文档频率（TF-IDF） 是一种广泛用于文本挖掘的特征向量化方法，用于反映词条对语料库中文档的重要性。表示术语 by 、文档 by和语料库 by 。词频是词在文档中出现的次数，而文档频率是包含词的文档数tdDTF(t,d)tdDF(t,D)t. 如果我们只用词频来衡量重要性，很容易过分强调那些经常出现但携带的文档信息很少的词，例如“a”、“the”和“of”。如果一个术语在整个语料库中出现的频率很高，则意味着它不包含有关特定文档的特殊信息。逆文档频率是一个术语提供多少信息的数字度量： 语料库中的文档总数 在哪里。由于使用对数，如果一个词出现在所有文档中，它的 IDF 值变为 0。请注意，应用了平滑词来避免语料库之外的词被零除。TF-IDF 度量只是 TF 和 IDF 的乘积：
+            IDF(t,D)=log|D|+1DF(t,D)+1,
+    |D|
+            TFIDF(t,d,D)=TF(t,d)⋅IDF(t,D).
+    术语频率和文档频率的定义有多种变体。在 MLlib 中，我们将 TF 和 IDF 分开以使其灵活。
+
+    TF：两个HashingTF与CountVectorizer可用于生成术语频率矢量。
+
+    HashingTF是 aTransformer它接受一组项并将这些组转换为固定长度的特征向量。在文本处理中，“一组术语”可能是一袋词。 HashingTF利用散列技巧。通过应用散列函数将原始特征映射到索引（术语）。这里使用的哈希函数是MurmurHash 3. 然后根据映射的索引计算词频。这种方法避免了计算全局术语到索引映射的需要，这对于大型语料库来说可能很昂贵，但它会遭受潜在的哈希冲突，其中不同的原始特征在哈希后可能成为相同的术语。为了减少碰撞的机会，我们可以增加目标特征维度，即哈希表的桶数。由于对散列值进行简单取模来确定向量索引，因此建议使用 2 的幂作为特征维度，否则特征将不会均匀地映射到向量索引。默认特征维度是218=262,144. 可选的二进制切换参数控制词频计数。当设置为 true 时，所有非零频率计数都设置为 1。这对于建模二进制而不是整数计数的离散概率模型特别有用。
+
+    CountVectorizer将文本文档转换为术语计数向量。有关更多详细信息，请参阅CountVectorizer 。
+
+    IDF :IDF是Estimator适合数据集并生成IDFModel. 所述 IDFModel需要的特征向量（通常从创建HashingTF或CountVectorizer）和缩放每个特征。直观地说，它降低了语料库中频繁出现的特征的权重。
+
+    注意： spark.ml不提供文本分割工具。我们将用户推荐给斯坦福 NLP 小组和 scalanlp/chalk。
+
+    例子        
+
+    在下面的代码段中，我们从一组句子开始。我们使用 HashingTF将每个句子分成单词Tokenizer。对于每个句子（词袋），我们使用HashingTF将句子散列到一个特征向量中。我们IDF用来重新调整特征向量；当使用文本作为特征时，这通常会提高性能。然后可以将我们的特征向量传递给学习算法。
+
+

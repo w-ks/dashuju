@@ -1,0 +1,221 @@
+1.environment  ->  source  ->  transform  ->  sink 
+2.environment
+    val env:ExecutionEnvironment = ExecutionEnvironment.getExecutionEnvironment  批处理
+    val env = StreamExecutionEnvironment.getExecutionEnvironment  流处理
+        .getExecutionEnvironment 会根据查询运行的方式决定返回什么样的运行环境
+
+
+3.source
+    1.有界流
+        1.env.fromCollection(seq/iter) 从集合读取数据
+        2.env.fromElements(T*)  读取任意类型
+        3. env.readTextFile(inputPath) 从文件中读取数据
+            1.env.readTextFile(file:///usr/local/test.txt)** 读取linux文件**
+                注：完全分布式中该路径下所有节点都要有这个文件 内容可以不一样 flink分别从多个数据源读取
+
+
+
+    2.无界流
+        1.从kafka中读取数据
+            1.代码 （消费者） 
+                val properties = new Properties()
+                properties.setProperty("bootstrap.servers","master:9092")
+                properties.setProperty("group.id","consumer-group")
+                FlinkKafkaConsumer consumer = new FlinkKafkaConsumer("topic", new SimpleStringSchema(), props);
+                    1.设置消费模式
+                        1.Flink从topic中最初的数据开始消费
+                            consumer.setStartFromEarliest();
+
+                        Flink从topic中指定的时间点开始消费，指定时间点之前的数据忽略
+                            consumer.setStartFromTimestamp(1559801580000l);
+
+                        Flink从topic中指定的offset开始，这个比较复杂，需要手动指定offset
+                            consumer.setStartFromSpecificOffsets(offsets);
+
+                        Flink从topic中最新的数据开始消费
+                            consumer.setStartFromLatest();
+
+                         Flink从topic中指定的group上次消费的位置开始消费，所以必须配置group.id参数
+                            consumer.setStartFromGroupOffsets();
+
+
+
+                val ds1: DataStream[String] = env.addSource(consumer)
+
+            2.集群
+
+
+
+4.transform 
+    代码 ‘E:\Flinklearn\atguigu\TransformTest.scala’
+    1.简单转换算子 (one to one)
+        1.map
+        2.flatMap集合打散工作
+        3.Filterif ture 保留
+
+    2.键控流算子
+        1.KeyBy分组聚合
+            得到keyedStream
+
+        2.滚动聚合算子（Rolling Aggregation）(数据源源不断)
+            keyBy之后
+            1.min()   2.sum()   3.max()   4.minBy()   5.maxBy()
+            为什么流式计算会出现最下面的先读进来呢？
+                因为map并行处理  多个数据同时读进来 进行Keyby聚合  然后流式输出  一下就读到最小的了
+                解决：并行度设为1
+
+
+        3.reduce
+            reduce(fun:(T1,T2) => T3)
+             遍历整个数据 T1代表之前的数据 T2代表遍历到的新数据 [替换 解决min时改变一整条数据]，T3代表结果
+
+
+    3.多流算子（分流 合流）
+        1.split
+            split只是将流拆分datastream->splitstream 将流分类 
+            结合select实现真正的分流  datastream -> 2datastream
+            分流的必要？
+                kafka数据源进来，在部门里操作时有些数据可能未经任何处理(原始数据->topic)此时需要做一个预分流的处理 不同部门拣选出想要的来之后 别的部门继续用别的数据 此时可以进行split操作分成不同的流 自己该消费的直接消费 别的流的数据重新洗到kafka里边 这样比的部分就可以继续消费继续用了
+
+
+        2.select (split+select 分流)
+            实例
+
+        3.connect
+            2datastearm -> connectstreams
+                表面合流 (放在同一个流中) 内补保持自己的数据和形式 两个流相互独立
+
+            1.CoMap、coFlatMap （调用map、flatMap方法 分别对多流进行转化）
+                connectstreams -> datastream
+                合流作用？
+                    例如 （风险控制 报警） 某一场景 检测火情，只检测温度 不合理，与之配合的还有烟雾报警器，假如说温度达到许多易燃物的燃烧的临界点，同时烟雾报警器数值又高，此时对这两个做一个联合 同时监测到当前数据  如果同时两个数值都高就做个报警
+
+
+
+        4.union
+            ndatastream -> datastream 
+            简单  限制：必须是相同数据结构的 datastream
+
+
+
+5.支持的数据类型
+    1.Flink 支持 Java 和 Scala 中所有常见数据类型。使用最广泛的类型有以下几种
+        1. 基础数据类型
+        2.Java 和 Scala 元组  (Tuples)
+        3.scala样例类 (case classes)
+        4.Java简单对象 (POJOs)
+        5.其它 (Arrays,Lists,Maps,Enums,等等)
+
+
+6.sink
+    1.flink底层并不像spark rdd(一个个数据集) 所以没有foreach方法 直接迭代去做输出
+    2.所有对外输出操作都要利用sink完成 官方提供了一部分的框架的sink。除此之外，需要用户自定义实现sink
+    1.writeAsCsv() writeAsText()
+        text.writeAsText(filepath,FileSystem.WriteMode.OVERWRITE)
+        直接输出到文本 可设置并行度为1
+        1. writeAsCsv已启用 因为不符合flink分布式架构的思想 可采用一下这种方法
+        ds1.addSink(StreamingFileSink.forRowFormat(new Path("E:\\Flinklearn\\atguigu\\src\\main\\resources\\out"),  new SimpleStringEncoder[SensorReading]()).build())
+
+    2.addSink 往kafka发送
+        1.ds1.addSink( new FlinkKafkaProducer[String]("master:9092","sinktest",new SimpleStringSchema()))
+
+    3.往redis发送
+        1. 定义一个FlinkJedisConfigBase
+            val conf = new FlinkJedisPoolConfig.Builder().setHost("master").setPort(6379).setPassword("1234").build()
+            dataStream.addSink(new RedisSink[SensorReading](conf,new MyRedisMapper))
+
+        2.定义一个RedisMapper
+            class MyRedisMapper extends RedisMapper[SensorReading]{  // 定义保存数据写入redis的命令 HSET 表名 key value
+            override def getCommandDescription: RedisCommandDescription =  new RedisCommandDescription(RedisCommand.HSET,"sensor_temp")  // 将id指定为key
+            override def getKeyFromData(t: SensorReading): String = t.id
+              // 将温度值指定为value
+            override def getValueFromData(t: SensorReading): String = t.temperature.toString}
+
+
+
+7.window
+    window一般在keyBy之后，当然也可直接windowsAll（不推荐，flink底层会把所有的数据都直接发送到同一个分区里，并行度=>1）
+    1. window 是一种切割无限数据为有限块进行处理的手段。
+        Window 是无限数据流处理的核心，Window 将一个无限的 stream 拆分成有限大小的”buckets”桶，我们可以在这些桶上做计算操作
+
+    2.窗口类型
+        1.TimeWindow
+            1.滚动时间窗口（TumblingWindow）
+                特点：时间对齐，窗口长度固定，没有重叠
+                .timeWindow(Time.seconds(15))
+                .window(TumblingEventTimeWindows.of(Time.seconds(15),Time.seconds(2)))
+
+            2.滑动窗口（Sliding Window）
+                特点：时间对齐，窗口长度固定，可以有重叠 
+                .timeWindow(Time.seconds(15),Time.seconds(7))
+                .window(SlidingEventTimeWindows.of(Time.seconds(15),Time.seconds(2)))
+
+            3.会话窗口（Session Window)
+                特点：时间无对齐
+                .window(EventTimeSessionWindows.withGap(Time.seconds(10))
+
+
+        2.CountWindow
+            1. 滚动计数窗口
+                只需要指定窗口大小即可，当元素数量达到窗口大小时，就会触发窗口的执行
+                .countWindow(10)
+
+            2.滑动计数窗口
+                每当某一个 key 的个数达到 2 的时候,触发计算，计算最近该 key 最近 10 个元素的内容
+                .countWindow(10,2)
+
+
+
+    3.WindowFunction
+        窗口之后使用的聚合计算操作，和窗口配合使用
+        1.增量聚合函数（incremental aggregation functions）(流处理 推荐使用)
+            ReduceFunction, AggregateFunction
+
+        2.全窗口函数（full window functions) （批处理 更底层灵活）
+            ProcessWindowFunction
+
+        3.其它可选API
+            .trigger() —— 触发器
+                定义 window 什么时候关闭，触发计算并输出结果
+
+            .evitor() —— 移除器
+                定义移除某些数据的逻辑 (计算时不考虑)
+
+            .allowedLateness() —— 允许处理迟到的数据
+            .sideOutputLateData() —— 将迟到的数据放入侧输出流 （一般配合allowedLateness函数 等待允许迟到时间之后的数据 放入侧输出流）
+            .getSideOutput() —— 获取侧输出流（完成window计算之后得到datastream之后获取侧输出流）
+
+
+
+8.时间语义与watermark
+    1.eventTime时间语义
+        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+
+    2. Watermark(事件时间语义下处理乱序数据)
+        1.watermark的产生
+            分布式网络等原因使得数据出现乱序，如果只根据eventtime决定window的运行，我们不能名曲日数据是否全部到位，但又不能无限期等下去，此时必须要有个机制来保证一个特定的时间后，必须出发window去进行计算，这个机制就是watermark
+
+        2.什么是watermark
+            1. 是一种衡量 Event Time 进展的机制。
+            2. Watermark 是用于处理乱序事件的，而正确的处理乱序事件，通常用Watermark 机制结合 window来实现
+            3.Watermark 可以理解成一个延迟触发机制
+
+
+    3.
+        1. assignTimestampsAndWatermarks(T)乱序数据提取时间戳
+            T
+                1.周期性适合数据比较秘籍大量数据涌入（常用）
+                    newBoundedOutOfOrdernessTimestampExtractor[SensorReading](Time.milliseconds(1000))
+                        1.延迟机制需要自己手动配置所以比较难把控，解决办法是在水位线到达之前输出一个近似结果（将延迟设置较低），结合window后面的.allowedLateness() —— 允许处理迟到的数据可实现结果正确 甚至最后可用.sideOutputLateData() —— 将迟到的数据放入侧输出流 （一般配合allowedLateness函数 等待允许迟到时间之后的数据 放入侧输出流）
+
+
+                2.间断性生成适合数据比较稀疏时比较常见
+
+
+        2. assignAscendingTimestamps() 升序数据提取时间戳 没有乱序数据
+
+    4.
+    5.
+
+
+

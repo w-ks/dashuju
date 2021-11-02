@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON对象的属性值可以是JSON对象</title>
+</head>
+
+<body>
+    <script>
+        var user = {
+            "username": "zhangsan",
+            "password": "123",
+            "email": "zhangsan@123.com",
+            "address": {
+                "city": '深圳',
+                "street": "宝安"
+            }
+        }
+
+        // zhangsan住在哪个城市怎么访问？
+        console.log(user.username + "居住在" + user.address['city'])
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>表单</title>
+</head>
+
+<body>
+    <!--
+        1、什么是表单有什么用?
+        发送请求,并且携带数据给服务器。
+        表单和超链接有共同的特征,就是都可以向服务器发送请求,
+        只不过超链接是用户直接点击发送请求,不能填写数据。
+        而用户点击表单提交的时候,不但可以发送请求,而且请求中还可以携带输入的数据
+        
+        表单最主要的作用就是:收集用户的信息。
+        
+        表单对应的英语单词是: form
+
+        2、怎么定义一个表单对象呢?语法格式 
+            <form>
+                表单项1:
+                表单项2: 
+            </form>
+            另外要注意:一个网页上可以有多个表单对象。
+        3、form标签中有一个 action属性,这个属性和超链接的href相同 都需要填写ur1。->
+        
+        重要******重要******重要******重要******重要******重要******重要******重要******
+        4.表单最终提交的时候,表单项的name属性非常重要,有name的才会提交。没有name是不会提交的。
+        并且浏览器向服务器提交数据的格式是? 
+            url?name=value&name=value&name=value&name=value&name=value
+            以上的提交数据的格式,是W3C指定的格式。所有浏览器都是这样的。
+            
+        以下表单提交数据的时候,格式是这样的: 
+            http://192.168.145.2:8080/crm/login?x=zhangsan&y=111
+
+        这个格式非常重要,必须背会,所有浏览器都是这样提交数据的: name=value&name=value&name=value
+
+        <--超链接-->
+    <a href="http://www.baidu.com">百度</a>
+    <br><br><br>
+
+    <!--往表单指定action提交数据-->
+    <form action="http://www.baidu.com">
+        <!-- 按钮,提交表单的按钮,只要点击这个提交按钮,就发送请求了! -->
+        <!--所有能够提交表单的按钮,type必须 submit是,不能随便写 -->
+        用户名：<input type="text" name="x">
+        <br> 密码：
+        <input type="password" name="y">
+        <br>
+        <input type="submit" value="登录">
+</body>
+
+</html>

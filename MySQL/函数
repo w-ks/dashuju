@@ -1,0 +1,47 @@
+17.2、
+单行处理函数常见的有哪些?
+    Lower 转换小写      // select lower(name) from students;
+    upper 转换大写      // select upper(name) from students;
+    substr 取子串(substr(被截取的字符串,起始下标截取的长度))   
+        select substr(ename, 1, 1) as ename from emp;
+        注意:起始下标从1开始,没有0.
+        找出员工名字第一个字母是A的员工信息?
+            第一种方式:模糊查询 select ename from emp where ename like 'A%';
+            第二种方式: substr函数 select ename from emp where substr(ename, 1, 1) =A';
+    concat函数进行字符串拼接    // select concat(empno,ename) from emp;
+    length 取长度
+    trim 去空格 
+    str_to_date 将字符串转换成日期 
+    date_format 格式化日期 
+    format 设置千分位 
+    round 四舍五入      // round(x,y) x字段 y保留的小数位数
+    rand() 生成随机数   // select round(rand()*100,0) from emp;  //100以内的随机数
+    ifnull 可以将null转换成一个具体值   // ifnull(数据，)
+
+    特点：输入多行，最
+分组函数(多行处理函数)终输出一行
+    5个：
+        count 计数
+        sum   求和
+        avg   平均值
+        max   最大值
+        min   最小值
+
+    注意：
+        分组函数在使用的时候必须先分组，然后才能用。
+        如果没有对数据进行分组，整张表默认为一组。
+
+    注意：
+        第一点:分组函数自动忽略NULL,你不需要提前对NULL进行处理。
+        
+        第二点:分组函数中count(*)和cont(具体字段)有什么区别? 
+        count(具体字段):表示统计该字段下所有不为NULL的元素的总数。 
+        count(*):统计表当中的总行数。(只要有一行数据 count则++)
+            因为每一行记录不可能都为NULL,一行数据中有一列不为NULL,则这行数据就是有效的。
+
+        第三点:分组函数不能够直接使用在 where子句中
+        
+        第四点:所有的分组函数可以组合起来一起用 
+        select sum(sal),min(sal),max(sal),avg(sal),count(*) from emp;
+
+

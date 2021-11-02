@@ -1,0 +1,23 @@
+1.输入密码登录
+    mysql -uroot -p
+
+    注意：mysql是不见";"不执行  ";"表示结束！SQL语句不区分大小写
+        \c 终止一条正在编写的语句
+2.查看mysql中有哪些数据库：
+    show databases;
+3.选择使用某个数据库：(例:使用test库)
+    use test;
+4.创建数据库：
+    create database bjpowernode;
+5.查看某个数据库下有哪些表：
+    show tables;
+6.导入准备好的数据
+    例如：bjpower.sql这个数据库表文件
+    source 路径(D:\)
+7.查看表中数据：
+    select * from 表名； //统一执行这个SQL语句
+select * from emp；//从emp表查询所有数据
+8.查表的结构：
+    desc 表名;
+9.查询一个字段：
+    select 字段名 from 表名;

@@ -1,0 +1,21 @@
+词向量Word2vec的本质
+    NLP(自然语言处理) 里的词语，是人类的抽象总结，是符号形式的（比如中文、英文、拉丁文等等），所以需要把他们转换成数值形式，或者说——嵌入到一个数学空间里，这种嵌入方式，就叫词嵌入（word embedding)，而 Word2vec，就是词嵌入（ word embedding) 的一种
+    Word2Vec 是一个Estimator 表示文档的单词序列并用于训练一个 Word2VecModel。该模型将每个单词映射到唯一的固定大小的向量。使用Word2VecModel 文档中所有单词的平均值将转换为向量；然后，可以将此向量用作预测，文档相似度计算等功能。
+
+        // Learn a mapping from words to Vectors.
+        val word2Vec = new Word2Vec()
+        .setInputCol("text")
+        .setOutputCol("result")
+        .setVectorSize(3)  把一个words组转换成多少纬度的向量,我们这里选择三个
+        .setMinCount(0)
+        val model = word2Vec.fit(documentDF)
+    
+    Tokenizer
+        Tokenization  是将文本(如一个句子)分解成单个术语(通常是单词)的过程。一个简单的Tokenizer类提供了这个功能。下面的例子展示了如何把句子分成单词序列。
+        RegexTokenizer 允许基于正则表达式(regex)匹配的更高级标记化。默认情况下，参数" pattern " (regex, default: "\\s+")被用作分隔符来分割输入文本。或者，用户可以将参数“gap”设置为false，表示正则表达式“模式”表示“令牌”，而不是拆分间隙，并找到所有匹配的事件
+
+    SparkMl-HashingTF (特征HASH-频数)
+        描述：HashingTF 是一个Transformer，在文本处理中，接收词条的集合然后把这些集合转化成固定长度的特征向量。这个算法在哈希的同时会统计各个词条的词频。
+
+
+

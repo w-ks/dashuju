@@ -1,0 +1,120 @@
+MapReduce
+
+    (1)用户编写的程序分成三个部分: Mapper, Reducer, Driver (提交运行mr程序的客户端)
+    (2)Mapper的输入数据是KV对的形式(KV的类型可自定义)
+    (3)Mapper的输出数据是KV对的形式(KV的类型可自定义)
+    (4)Mapper中的业务逻辑写在map()方法中
+    (5)map()方法(maptask进程)对每一个<K,V>调用一次
+    (6)Reducer的输入数据类型对应 Mapper的输出数据类型,也是KV
+    (7)Reducer的业务逻辑写在 reduce()方法中
+    (8)Reducetask 进程对每一组相同k的<k,v>组调用一次 reduce()方法
+    (9)用户自定义的Mapper和 Reducer都要继承各自的父类
+    (10)整个程序需要一个Drvier来进行提交,提交的是一个描述了各种必要信息的job对象
+
+2.2. WordCount 示例编写
+需求:在一堆给定的文本文件中统计输出每一个单词出现的总次数
+
+一、设置mapper
+    1.
+      继承mapper
+      设置 输入输出键值 数据类型
+    2.
+      重写map()方法
+      spilt 切片
+      creat.write()写入输出键值对
+
+二、Reducer阶段
+    1.
+      继承Reducer
+      设置 输入输出键值 数据类型
+    2.
+      定义计数器
+      final Counter counter = context.getCounter("MY_COUTER", "online");
+      .get获取数据
+      context.write(key, new IntWritable(count)); 写入键值
+
+插曲
+        mapreduce实现倒序的两种方法
+        
+        1.外部比较器实现
+                需要注意，这里的比较是对MapReduce中key类型的比较，并且key的类型为InWritable类型。
+                1、自定义比较器继承WritableComparator类
+
+                
+
+三、Driver阶段
+    1.
+          定义conf
+          Configuration conf = new Configuration();
+
+          通过Job 来封装本次mr的相关信息
+          Job job =Job.getInstance(conf);
+
+  //      指定本次mr job jar包运行的主类
+          job.setJarByClass(WordCountDriver.class);
+
+  //      指定本次mr 所用的mapper reducer类分别是什么
+          job.setMapperClass(WordCountMapper.class);
+          job.setReducerClass(WordCountReducer.class);
+
+  //      指定本次mr mapper阶段的输出  k v 类型
+          job.setMapOutputKeyClass(Text.class);
+          job.setMapOutputValueClass(IntWritable.class);
+
+  //      指定本次mr 最终输出的  k v 类型
+          job.setOutputKeyClass(Text.class);
+          job.setOutputValueClass(IntWritable.class);
+
+  //        设置reduce阶段运行的task个数为多少 (数据分区)设置最终文件输出个数
+          job.setNumReduceTasks(1);
+
+  //      指定本次mr 输入的数据路径 和最终输出结果存放在什么位置
+          FileInputFormat.setInputPaths(job, "E:\\wordcount\\input");
+          FileOutputFormat.setOutputPath(job, new Path("E:\\wordcount\\output"));
+
+  //      job.submit();
+  //      提交程序  并且监控打印程序执行情况(true)
+          boolean b = job.waitForCompletion(true);
+          System.exit(b?0:1);
+
+3.  main 四合天地强化版
+    public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
+          Configuration conf = new Configuration();
+          Job job =Job.getInstance(conf);
+
+          job.setJarByClass(WordCountDriver.class);
+          job.setMapperClass(WordCountMapper.class);
+          job.setReducerClass(WordCountReducer.class);
+
+          job.setMapOutputKeyClass(Text.class);
+          job.setMapOutputValueClass(IntWritable.class);
+
+          job.setOutputKeyClass(Text.class);
+          job.setOutputValueClass(IntWritable.class);
+
+          job.setNumReduceTasks(3);
+          // 制定输入输出；路径
+          Path path = setPath(job);
+
+          path.getFileSystem(conf).delete(path,true); // 删除你的输出文件夹，可以不用写，但测试时候每次都要删除输出路径文件
+          boolean b = job.waitForCompletion(true);
+          System.exit(b?0:1);
+    }
+
+    /**
+    * 这个方法为定义数据的输入输出路径
+    *
+    * @param job
+    * @return Path
+    * @thorws IOException
+    */
+
+    private static Path setPath(Job job) thorws IOException{
+
+          FileInputFormat.addInputPaths(job, new Path("E:\\wordcount\\input"));
+          Path path = new Path("hdfs://Clean_data/phone")
+          FileOutputFormat.setOutputPath(job, path);
+          return path;
+          
+    }
+

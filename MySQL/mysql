@@ -1,0 +1,81 @@
+5、在 windows操作系统当中,怎么使用命令来启动和关闭mysql服务呢?
+	语法:
+	net stop 服务名称;
+	net start 服务名称;
+
+            其它服务的启停都可以采用以上的命令
+
+
+6、mysq1安装了,服务启动了,怎么使用客户端登录mysql数据库呢?
+使用bin目录下的 mysgl.exe命令来连接mysq数据库服务器
+
+本地登录:  用管理员权限打开cmd
+
+C:\Windows\system32>
+mysql -uroot -p123456
+隐藏密码
+mysql -uroot -p
+
+                                    查看mysql数据库的版本号：
+                                            select version();
+7、mysql常用命令:
+
+	退出 mysql:  exit
+
+	查看mysql中有哪些数据库?
+	    show databases;
+
+	注意:以分号结尾,分号是英文的分号。
+
+	+-------------------------+
+	| Database        	      |
+	+-------------------------+
+	| information_schema      |
+	| mysql              	  |
+	| performance_schema      |
+	| sys                	  |
+	+-------------------------+
+	mysql默认自带了4个数据库
+
+	怎么选择使用某个数据库呢?
+	mysql> use test;
+	Database changed
+	   表示正在使用一个名字叫做test的数据库。
+
+ 	怎么创建数据库呢?
+	    create database bjpowernode;
+
+    查看某个数据库下有哪些表呢？
+        show tables;
+9、关于MySQL语句的分类?
+
+	SQL语句有很多,最好进行分门别类,这样更容易记忆
+		分为:
+		DQL:
+		     数据查询语言(凡是带有select关键字的都是查询语句）
+			 select...
+		DML:
+			数据操作语言(凡是对表当中的数据进行增删改的都是DML)
+			insert delete update
+			insert 增
+			delete 删
+			update 改
+
+			这个主要是操作表中的数据data
+		DDL:
+			数据定义语言
+			凡是带有 create、drop、alter的都是DDL
+			DDL主要操作的是表的结构。不是表中的数据。
+			create:新建,等同于增
+			drop:删除
+			alter:修改
+			这个增删改和DML不同,这个主要是对表结构进行操作
+		TCL :
+			是事务控制语言
+			包括:
+			        事务提交: commit;
+			        事务回滚: rollback;
+
+		DCL:
+			是数据控制语言。
+			例如:授权grant、撤销权限 revoke...

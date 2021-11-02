@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>005</title>
+</head>
+
+<!-- 使此窗口一键设置顶级窗口 -->
+
+<body>
+
+    <script>
+        function setwin() {
+            // 如果此窗口不是顶级窗口
+            if (window.top != window.self) {
+                // 将当前窗口设置为顶级窗口
+                // 将顶级窗口的window.top.location地址设置为005
+                window.top.location = window.self.location
+            }
+        }
+    </script>
+    003页面
+    <input type="button" value="如果当前窗口不是顶级窗口，将当前窗口设置为顶级窗口" onclick="setwin()"> z
+</body>
+
+</html>

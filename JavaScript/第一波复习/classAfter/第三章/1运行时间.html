@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<script>
+var t1,t2,htime,sum=0;
+t1 = new Date();
+
+document.write("循环前的时间是："+t1.toLocaleString()+" "+t1.getMilliseconds()+"<br />")
+
+for (i=0;i<10000;i++){
+    sum+=i
+}
+
+t2 = new Date();
+document.write("循环后的时间是："+t2.toLocaleString()+" "+t2.getMilliseconds()+"<br />")
+
+document.write("执行10000次循环用时"+(t2.getTime()-t1.getTime()+"毫秒"))
+
+</script>
+
+<body>
+    
+
+</body>
+</html>

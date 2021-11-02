@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>事件的最后一个完美的案例</title>
+</head>
+
+<body>
+    <script>
+        window.onload = function() {
+            document.getElementById("bt1").onclick = function() {
+                console.log('按钮1单击')
+            }
+
+            document.getElementById("bt2").onclick = function() {
+                console.log('按钮2单击')
+            }
+
+            document.getElementById("t1").onblur = function() {
+                console.log('失去焦点')
+            }
+        }
+    </script>
+
+
+    <input type="button" value="按钮1" id="bt1">
+    <input type="button" value="按钮2" id="bt2">
+    <input type="text" id="t1">
+</body>
+
+</html>

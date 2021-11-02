@@ -1,0 +1,24 @@
+/* id 选择器 */
+
+#div1 {
+    width: 100px;
+    height: 100px;
+    background: blue;
+}
+
+
+/* 标签选择器 */
+
+input {
+    /* border-style: solid;
+    border-color: red;
+    border-width: 1px */
+    border: red solid 1px;
+}
+
+
+/* 类选择器 */
+
+.myinput {
+    border: blue double 2px;
+}

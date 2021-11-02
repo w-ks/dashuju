@@ -1,0 +1,58 @@
+LR 由线性回归衍生而来；
+  原理：将样本的特征和样本发生的概率联系起来，概率是一个数；
+  逻辑回归既可以看做是回归算法，也可以看做是分类算法；
+  通常作为分类算法用，只可以解决二分类问题；也可以使用其他技巧使他支持多分类问题。
+  比如，在线性回归中，输入特征数据，得到具体的值；可以将这个输出值作为得分；如果有多个类别，那么可以划分到得分最高的这个类别中。
+  用的分来表示分类结果不恰当，转化为 概率值更好。可以使用 sigmoid 来转换。
+
+在特征空间找到一条直线，来分割样本到对应的两个分类。
+
+explainParams() 模型解释参数 
+
+sigmoid 
+
+函数没有公式解，只能使用梯度下降法求解；
+是一个凸函数，只有惟一的一个全局最优解，没有局部最优解；
+
+决策边界
+逻辑回归中添加多项式特征
+引入多项式项，将线性决策边界转化为非线性。
+
+数据预处理
+  深度学习可能存在过拟合问题——高方差，有两个解决方法，一个是正则化，另一个是准备更多的数据
+  1) 正则化
+    setRegParam ( value: Double ) :  设置正则化参数。默认值为 0.0。
+  2) 标准化
+    setStandardization ( value: Boolean ) :  是否在拟合模型之前对训练特征进行标准化。
+  3) 弹性网络参数
+    setElasticNetParam ( value: Double ) : Set the ElasticNet mixing parameter. For alpha = 0, the penalty is an L2 penalty. For alpha = 1, it is an L1 penalty. For alpha in (0,1), the penalty is a combination of L1 and L2. Default is 0.0 which is an L2 penalty.
+      Note: Fitting under bound constrained optimization only supports L2 regularization, so throws exception if this param is non-zero value.常。
+
+  randomSplit
+
+使用
+    // 数据拆分
+    val rand = new Random()
+    val data:DataFrame = df.select("square", "price").map(
+      row => (row.getAs[String](0).toDouble, row.getAs[String](1).toDouble, rand.nextDouble()))
+      .toDF("square", "price", "rand").sort("rand") //强制类型转换过程
+
+    data.show()
+
+    val ass: VectorAssembler = new VectorAssembler().setInputCols(Array("square")).setOutputCol("features")
+    val dataset: DataFrame = ass.transform(data) //特征包装
+
+    val Array(train, test) = dataset.randomSplit(Array(0.8, 0.2)) //拆分成训练数据集和测试数据集
+
+    //逻辑回归模型
+    val lr: LogisticRegression = new LogisticRegression().setLabelCol("price").setFeaturesCol("features")
+        // 设置注册参数和弹性网络参数
+      .setRegParam(0.3).setElasticNetParam(0.8).setMaxIter(10)
+    
+    // 训练训练集 测试测试集
+    val model: LogisticRegressionModel = lr.fit(train)
+    model.transform(test).show()
+
+    // 迭代次数
+    val s: Int = model.summary.totalIterations
+    println(s"iter: ${s}")

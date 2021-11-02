@@ -1,0 +1,187 @@
+如果遇到csv编码问题
+data = pd.read_csv(r"E:\sparkLearn\datasH3C\lining_tmall.csv")
+data.to_csv("./acc.csv",index=False,encoding='utf_8_sig')   ## utf_8_sig
+
+
+movieExplode lateral view explode(split(category,",")) table_tmp as category_name;
+
+stat.approxQuantile 近似中位数 df1.stat.approxQuantil
+
+stddev: 返回样本的标准偏差(无偏) stddev_pop: 返回样本的方差 sumDistinct 返回表达式中不同值的和。
+
+mode众数 HIve没有all，any的用法,只能用max来定位出现次数最多的了
+
+思路: 列中每个元素出现次数group count->找出出现次数最多的 max(值为次数) -> 找到和max(值为次数)次数相同的 值为众数
+
+SELECT 
+income 
+from 
+test_avg_medium_freq 
+group by 
+income
+having 
+count(*)>=(
+select max(num) from (
+select 
+count(*) as num 
+from 
+test_avg_medium_freq 
+group by 
+income
+)
+
+) 
+
+get_json_object    
+> SELECT get_json_object('{"a":"b"}', '$.a');　　b
+
+！ sqoop命令
+
+java时间处理
+二.日期 <==> 字符串
+1. 转换为 "yyyy-/年MM-dd HH:mm:ss" 格式
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
+    //1、日期转字符串 Calendar
+    Calendar calendar = Calendar.getInstance();
+    Date date = calendar.getTime();
+    //2、根据时间戳转换为特定格式 时间字符串
+    String dateStringParse = sdf.format(date);
+
+三、日期加减
+
+.常用的就下面的几个:
+
+Date:　　　　　　getTime()、   setTime()
+
+DateFormat:    getInstance()、getDateInstance()、getDateTimeInstance()、
+getTimeInstance()
+
+SimpleDate     Formate:Formate(Date)、   parse(Strings)
+
+Calendar:　　　 getInstance()、set()、get()、getActualMaximum()、
+add()、gettime()、setTime(Date)
+
+next_day months_between dayofmonth unix_timestamp from_unixtime current_timestamp current_date
+
+[^]：排除一个范围
+
+String json = FileUtils.readFileToString(new File(path), "UTF-8");
+
+hive> SELECT get_json_object(src_json.json, '$.store.fruit[0]') FROM src_json;
+
+外部表 external
+单行函数：
+字符串 :  
+切割： split("ab_c","_")
+去空格：trim(" abc ")  trim(LEADING[TRAILING 尾随] FROM str) - 可指定删除前导还是尾随空字符  trim(LEADING[TRAILING] trimStr FROM str) - 从str中删除前导[尾随]trimStr字符
+拼接： concat("a","b")   concat_ws(",","ab","cd")--> ab,cd
+子串:  substr("abcd",2) --> bcd   substr("abcd",2,2) -->bc
+转大小写: upper("abcd")  lower("abcd")！ 可用来正则匹配
+长度：length("abcd") --> 4
+反转：reverse("abcd") -->  'dcba'
+空值: nvl(string1, replace_with) -- nvl(null,-1) --> -1
+正则匹配:regexp --'fb' regexp '.*' --> true
+注意 hive正则需进行\\ 转义为普通字符
+替换：regexp_replace('foobar', 'oo|ar', '') --> fb
+正则提取：regexp_extract('100-200', '(\d+)-(\d+)', 1) --> 100
+模糊查询 where city like '%北京%' 
+复制: repeat("123",3)  --> 123123123 
+拆分句子: sentences(str, lang, country) - 将str分割成句子的数组，其中每个句子是单词的数组。'lang'和'country'参数是可选的，如果省略，将使用默认区域设置。
+SELECT sentences('Hello there! I am a UDF.') FROM src LIMIT 1;
+[ ["Hello", "there"], ["I", "am", "a", "UDF"] ]
+SELECT sentences(review, language) FROM movies;   - 不必要的标点符号，如英语中的句号和逗号，会被自动去掉。如果指定，'lang'应该是两个字母的ISO-639语言代码(如'en')，而'country'应该是两个字母的ISO-3166代码(如'us')。并不是所有国家和语言代码都完全受支持，如果指定了不支持的代码，则使用默认区域设置来处理该字符串。
+索引处字符串: elt(N int,str1 string,str2 string,str3 string,...)	返回索引号处的字符串。例如elt（2，'hello'，'world'）返回'world'。如果N小于1或大于参数个数，则返回NULL。	
+去重后的单词个数： field(val T,val1 T,val2 T,val3 T,...)	 返回val1，val2，val3，...列表中val的索引；如果未找到，则返回0。例如，字段（“ world”，“ say”，“ hello”，“ world”）返回3。
+
+
+
+类型转换:
+cast("1" as int)
+cast("2019-06-18" as date)
+cast("1.08" as double)
+to_date("2019-06-18")
+typeof(array(1,2))  array<int>
+
+条件表达：
+select  id,name,if(age>10 and age<15,"young","old"), 
+
+case 
+when age<10 then '儿童'
+when age between 10 and 20 then '少年'
+when age>=20 and age<40 then '青年'
+when age>=40 and age<50 then '中年'
+else '老年'
+end  as flag 
+
+case age
+when 10 then '10岁'
+when 20 then '20岁'
+else '其他'
+end as f2  
+
+数字运算
+abs(-2385)
+floor(3.12) -> 3
+ceiling(3.12) -> 4
+round(3.123,2) -> 3.12
+sqrt(4) -> 2
+pow(4,0.5) -> 2
+pow(4,2) -> 16
+sign(-42) -> -1.0
+
+
+日期操作
+year("2017-06-17")
+month("2017-06-17")
+day("2017-06-17")
+dayofweek(date) - 返回日期/时间戳的星期几（1 = 星期日，2 = 星期一，...，7 = 星期六）。
+dayofyear(date) - 返回日期/时间戳的年份。  SELECT dayofyear('2016-04-09'); 100
+hour("2017-06-17 10:30:40")
+date_sub("2017-06-17",1)
+datediff("2017-05-31","2017-06-17")
+date_add("2017-06-17",1)
+dayofmonth("2017-06-17")  17
+to_date("2017-06-17 10:30:40")
+next_day('2015-01-14', 'TU')
+
+unix_timestamp("2017/06/17 10:30:40","yyyy/MM/dd HH:mm:ss") y/m/d->时间戳
+注意 可用来计算小时差-> 时间戳相减后 /60/60和分钟差-> 时间戳相减后 /60
+from_unixtime(1497695440,"yyyy/MM/dd HH:mm:ss") 时间戳-> 指定时间格式
+
+current_timestamp 当前时分秒
+current_date 获取当前日期
+date_format(timestamp, fmt) - 转换timestamp为日期格式指定格式的字符串值fmt
+> SELECT date_format('2016-04-08', 'y');   2016
+
+所以我们利用其中的hour和datediff来获取create_time与当前时间的小时差：
+hive> select create_time,(hour(from_unixtime(unix_timestamp(),'yyyy-MM-dd HH:mm:ss'))-hour(create_time)+(datediff(from_unixtime(unix_timestamp(),'yyyy-MM-dd HH:mm:ss'), create_time))*24) as hour_dValue from test;
+2017-11-10 09:43:35   145   
+分组聚合函数：	
+max
+min
+sum
+count
+avg 均值
+var_pop 数字列的方差
+var_samp 无偏样本方差
+stddev_pop 标准偏差
+stddev_samp
+percentile
+
+
+collect_set("course")  -- set会去重
+collect_list("course") -- list不去重
+
+窗口函数:
+row_number() over()   排序  打标签 1 2 3 4 5 
+rank() over()         排名 遇到相同的值打同一个标签 下一个值加对应的跳跃值 1 2 3 3 5
+dense_rank() over()   排名 遇到相同的值打同一个标签 下一个值不进行跳跃 1 2 3 3 4 
+ntile(n) over()        将数据切分成n个区，并返回属于第几个分区
+sum() over()
+count()  over()
+first_value() over()  取分组内排序后，截止到当前行，第一个值
+last_value() over()   取分组内排序后，截止到当前行，最后一个值
+lead() over()    : LEAD(col,n,DEFAULT) 用于统计窗口内往下第n行值, 与LAG相反
+lag() over()     : LAG(col,n,DEFAULT) 用于统计窗口内往上第n行值
+
+

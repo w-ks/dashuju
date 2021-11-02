@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>周期性调用函数</title>
+</head>
+
+<body>
+
+    <script>
+        window.onload = function() {
+
+            bt1E = document.getElementById("bt1")
+            bt1E.onclick = function() {
+                    // 每隔1s调用一次displayTime()函数
+                    v = window.setInterval("displayTime()", 1000)
+                }
+                // 区分""和''
+            document.getElementById("bt2").onclick = function() {
+
+                window.clearInterval(v)
+            }
+
+        }
+
+
+        // 字符串时间
+        function displayTime() {
+            var time = new Date()
+            document.getElementById('div1').innerHTML = time.toLocaleString()
+        }
+    </script>
+    <input type="button" value="显示当前时间" id="bt1">
+    <input type="button" value="时间停止" id="bt2">
+
+    <div id="div1"></div>
+</body>
+
+</html>

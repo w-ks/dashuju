@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>定义内部样式块对象</title>
+
+    <!-- head标签中使用style标签，定义样式块对象 -->
+    <style>
+        /*
+            选择器{
+                样式名：样式值；
+                样式名：样式值；
+                样式名：样式值；
+                ....
+            }
+                css中常见的选择器包括：最常见的三种选择器
+                    标签选择器
+                    id选择器
+                    class选择器
+        */
+        /*  
+            1.标签选择器
+                标签名{} 作用于所有该标签
+        */
+        
+        div {
+            background-color: aqua;
+            width: 100px;
+            height: 100px;
+            border-style: solid;
+            border-color: red;
+            border-width: 5px;
+        }
+        /*
+            2.ID选择器
+                #id{} 只作用于id这个元素
+        */
+        
+        #username {
+            width: 400px;
+            height: 30px;
+            border-style: solid;
+        }
+        /*
+            3.类选择器
+                .class{} 样式作用于当前网页中某一类的标签
+        */
+        
+        .student {
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+    </div>
+    <div></div>
+    <div></div>
+    <br>
+    <br>
+    <br>
+    <!-- 怎样才能让样式作用于某一个标签，可以使用id选择器 -->
+    <input type="text" id="username">
+    <br>
+    <br>
+    <br>
+
+    <!-- class属性，任何一个标签都有，class相同的，可以看做是同一类标签 -->
+    <span class="student">文本内容span</span>
+    <p class="student">文本内容：段落p标签</p>
+</body>
+
+</html>

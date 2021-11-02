@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<script>
+    function showtime(){
+        t1=new Date();
+        h=t1.getHours()
+        m=t1.getMinutes()
+        s=t1.getSeconds()
+        
+        if (h<10){h="0"+h }
+        if (m<10){m="0"+m }
+        if (s<10){s="0"+s }
+
+        document.querySelector("#time").innerHTML=
+        "当前时间 "+h+":"+m+":"+s
+        setInterval("showtime()",1000)
+
+    }
+    
+    window.onload=showtime
+</script>
+<body>
+    
+    <div>
+        <li id="time"></span>
+    </div>
+
+
+</body>
+</html>

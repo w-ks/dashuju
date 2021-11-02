@@ -1,0 +1,100 @@
+1、sql中有like 和 rlike，具体区别
+
+like：
+
+%：匹配零个及多个任意字符
+
+ _：与任意单字符匹配
+
+ []：匹配一个范围
+
+ [^]：排除一个范围
+
+ ESCAPE  关键字定义转义符  WHERE   ColumnA   LIKE   '%5/%%'   ESCAPE   '/' 
+
+like不是正则，而是通配符
+
+
+
+rlike:
+
+rlike是正则，正则的写法与java一样。'\'需要使用'\\',例如'\w'需要使用'\\w'
+
+A rlike '\\d+' 匹配一个或多个数字， not A rlike '\\d+' 匹配非数字
+
+直接在条件里面写正则表达式
+
+2、hive sql 中 正则匹配函数
+
+regexp 功能和 rlike类似
+
+
+select count(*) from olap_b_dw_hotelorder_f where create_date_wid  regexp '\\d{8}'
+select count(*) from olap_b_dw_hotelorder_f where create_date_wid rlike '\\d{8}'
+
+regexp_extract(string subject, string pattern, int index)   将字符串subject按照pattern正则表达式的规则拆分，返回index指定的字符
+
+select regexp_extract('IloveYou','(I)(.*?)(You)',1) from test1 limit 1  // 1 匹配 I，2匹配 love，3匹配 You
+
+regexp_replace(string A, string B, string C)  将字符串A中的符合Java正则表达式B的部分替换为C  
+        select regexp_replace('6125公司名称与aaa银行名称账号是工商银行3346464646466666','[^0-9]',''))
+select regexp_replace("IloveYou","You","") from test1  // Ilove
+
+        spark DataFrame正则表达式
+        注意 在spark中使用正则的时候，需要时时刻刻加上转义自符
+
+        '\'需要使用'\\',例如'\w'需要使用'\\w'
+        1
+        正则表达式，使用的库在sql.funtions 下，如导入split和regexp_extract
+
+        import org.apache.spark.sql.functions.{regexp_extract,split}
+        1
+        1.1 split
+        split 切分字符串
+        可通过下面的，形如udf函数实现
+
+        val splitFunc=udf((arg:String)=>{arg.split(',|[| ')[0]})
+        1
+        也可使用
+
+        var data1 = data.withColumn(colName, split(col(colName), pattern=',|[| ')(0))
+        1
+        1.2 regexp_extract      index 0 代表所有符合匹配的结果 1 代表返回第一组 2 代表返回第二组 ...
+        regexp_extract(string subject, string pattern, int index) 将字符串subject按照pattern正则表达式的规则拆分，返回index指定的字符
+        例子：匹配至少有两个非数字的gid
+
+        val data =fake_data.select(regexp_extract(fake_data("gid"),"^\\d{2}",0).alias("gid"))
+        // 将三次数字累加
+        data.select(regexp_extract(data("type"),"(\\d).(\\d).(\\d)",1)+regexp_extract(data("type"),"(\\d).(\\d)",2)+regexp_extract(data("type"),"(\\d).(\\d).(\\d)",3)).alias("type").show()
+        1
+        1.3 like & rlike的区别
+        1.3.1 like：
+        %：匹配零个及多个任意字符
+        _：与任意单字符匹配
+        []：匹配一个范围
+        [^]：排除一个范围
+        ESCAPE 关键字定义转义符 WHERE ColumnA LIKE ‘%5/%%’ ESCAPE ‘/’
+        like不是正则，而是通配符
+
+        1.3.2 rlike
+        rlike是正则，正则的写法与java一样。’‘需要使用’\’,例如’\w’需要使用’\w’
+        A rlike ‘\d+’ 匹配一个或多个数字， not A rlike ‘\d+’ 匹配非数字
+
+
+这里几个函数类似oracle的5个正则函数，具体可参考oracle的正则匹配函数
+
+正则表达式的() [] {} 有着不同的意思。
+
+（） 是为了提取匹配字符串的，表达式中有几个()就有几个相应的匹配字符串
+
+(\s*)表示连续空格的字符串
+
+[] 是定义匹配的字符范围。比如[a-zA-Z0-9]表示相应位置的字符要匹配英文字符和数字。[\s*表示空格或者*号]
+
+{}一般是用来匹配的长度。比如\s{3}表示匹配三个空格，\s[1,3]表示匹配1到3个空格
+
+select *,
+    cast(
+        regexp_replace(fangjianshu,'.(.*?)(//d)(.*?)',2) 
+        as int) fangjianzongshu 
+from o1

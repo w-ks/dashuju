@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>获取下拉列表的value</title>
+</head>
+
+<body>
+    <!-- 第一种方式 -->
+    <select id="provice" onchange="alert(this.value)">     <!-- 这里的this代表当前的下拉列表对象 -->
+        <option value="">--请选择省份--</option>
+        <option value="001">山东省</option>
+        <option value="002">山西省</option>
+        <option value="003">河北省</option>
+        <option value="004">河南省</option>
+    </select>
+
+    <!-- 第二种方式 -->
+    <script>
+        window.onload = function() {
+            document.getElementById("provice2").onchange = function() {
+                alert(document.getElementById("provice2").value)
+            }
+
+
+        }
+    </script>
+    <select id="provice2">     
+        <option value="">--请选择省份--</option>
+        <option value="001">山东省</option>
+        <option value="002">山西省</option>
+        <option value="003">河北省</option>
+        <option value="004">河南省</option>
+
+
+
+</body>
+
+</html>

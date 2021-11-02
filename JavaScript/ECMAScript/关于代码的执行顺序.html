@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关于代码的执行顺序</title>
+</head>
+
+
+
+<!-- 第一种方式<body onload="mybody()"> -->
+
+<body>
+
+    <script>
+        function mybody() {
+
+            console.log('我是回调函数')
+
+        }
+        // 第二种方式
+        // 在页面打开的时候,以下这行代码会执行,这行代码执行的作用是:将回调函数mybody注册到load事件上
+        // 当页面全部加载完毕之后,会发生load事件,1oad事件发生之后,监听器负责调用回调函数 myfun 
+
+        //window.onload = mybody
+
+        // 事件发生之后, 后面的“匿名回调函数” 会被监听器调用
+        window.onload = function() {
+            console.log("我是匿名函数!")
+        }
+    </script>
+
+</body>
+
+</html>
+<script>
+    alert("页面加载完毕了")
+</script>

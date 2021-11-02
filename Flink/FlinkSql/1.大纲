@@ -1,0 +1,74 @@
+1.运行
+    1.依赖
+        添加 flink-table-planner_2.11 / flink-table-panner-blink_2.11
+
+    2.环境创建
+        1.StreamTableEnvironment.create(env) 基于ds环境创建表流式执行环境 下方也可通用方式
+            val settings: EnvironmentSettings = EnvironmentSettings.newInstance()  .useOldPlanner().inStreamingMode().build()
+            val oldStreamTableEnv: StreamTableEnvironment = StreamTableEnvironment.create(env, settings)
+
+        2.基于blink planner的流处理
+            val blinkStreamSettings: EnvironmentSettings = EnvironmentSettings.newInstance()  .useBlinkPlanner().inStreamingMode().build()
+            val blinkStreamTableEnv: StreamTableEnvironment = StreamTableEnvironment.create(env, blinkStreamSettings)
+
+        2.表环境（TableEnvironment）是 flink 中集成 Table API & SQL 的核心概念
+            1.表环境的职责
+                ①注册 catalog ② 在内部 catalog 中注册表 ③ 执行 SQL 查询 ④ 注册用户自定义函数⑥ 将 DataStream 或 DataSet 转换为表 ⑦ 保存对 ExecutionEnvironment 或 StreamExecutionEnvironment 的引用
+
+    3.创建一张表
+        1.tableEnv.fromDataStream(ds) 从ds中读取
+        2. 常用方式   使用双表连接一个输入一个输出
+            2.tableEnv
+                .connect(ConnectorDescriptor)      定义表的数据来源，和外部系统建立连接
+                .withFormat(FormatDescriptor)      定义数据格式化方法
+                .withSchema(Schema)                                 定义表结构.
+                .createTemporaryTable("table")    创建临时表
+
+        3.表可以是常规的（Table，表），或者虚拟的（View，视图）
+            1.常规表（Table）一般可以用来描述外部数据，比如文件、数据库表或消息队列的数据，也可以直接从 DataStream 转换而来
+            2.视图可以从现有的表中创建，通常是 table API 或者 SQL 查询的一个结果
+
+2.Api
+    1.TABLE API
+        1.tb.select("id,temperature").filter("id == 'sensor_1'")好像spark的df api
+        2.tableEnv.from("inputTable").select(...) 通过 TABLE api查询算子，得到一张结果表
+        3. 'timestamp as 'ts 可以用 as 做重命名
+
+    2.SQL
+        1.tableEnv.createTemporaryView("tb",tb) 基于环境创建表传入表的名字和表源
+        2.tableEnv.sqlQuery("select id,temperature from tb where id = 'sensor_1'") 执行sql语句得到一张结果表
+
+    3.输出
+        1.转换成追加流 进行打印输出
+            tb2.toAppendStream[(String,Double)].print("result") 注意填入表的结构
+
+        2.表输出
+            1.result.insertInto("outputTable")将结果表写入输出表中
+                写入外部环境时 需要注册在当前环境的表去做输出
+
+
+        3.输出到mysql
+            
+            
+            
+            
+
+        
+        
+
+    4.更新模式
+        1.追加（Append）模式
+            -表只做插入操作, 和外部连接器只交换插入(Insert) 消息
+
+        2.撤回（Retract）模式
+            表和外部连接器交换添加 (Add) 和撤回(Retract) 消息
+            插入操作(Insert) 编码为Add消息;删除(Delete) 编码为Retract消息; 更新(Update)
+            编码为上一条的Retract和下一条的Add消息
+
+        3.更新插入（Upsert）模式
+            -更新和插入都被编码为Upsert消息;删除编码为Delete消息
+
+
+
+
+

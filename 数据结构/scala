@@ -1,0 +1,34 @@
+Scala
+    list        
+            head 获得列表第一个元素
+            tail 获得列表除第一个元素之外的其它元素
+            isEmpty：判断列表是否为空，空的话返回真
+            last：获得列表最后一个元素
+            init：获得除最后一个元素之外的元素
+            reverse：反转列表
+            xs take n 返回xs列表的前n个元素，如果n大于xs.length，则返回整个xs。
+            xs drop n 返回xs列表除前n个元素之外的所有元素，如果n大于xs.length，则返回空列表。
+            splitAt操作在指定位置 拆分列表，并返回对偶列表。
+            xs splitAt n等价于（xs take n， xs drop n）
+            元素选择：apply方法和indices方法
+            apply方法实现了随机元素的选择，与其它类型一样，当对象出现在应该是方法调用的函数位置上时，就会隐式地插入apply方法
+            xs apply n 等价于 （xs drop n）.head
+            indices方法可以返回指定列表的所有有效索引值组成的类表：
+            啮合列表：zip
+
+            zip操作可以把两个列表组成一个对偶列表：
+            如果两个列表的长度不一致，那么任何不能匹配的元素将被丢掉
+            zipWithIndex把列表元素与索引值啮合在一起
+            显示列表：toString方法和mkString方法
+
+            toString操作返回列表的标准字符串表达形式：
+            如果需要其他表达形式，可以使用mkString方法。xs mkString(pre, sep, post)
+            其中pre是需要在显示的元素之前的前缀字符串，sep为两个元素之间的分割字符串，post为显示在最后面的后缀字符串。
+
+            xs.mkString 等价于 xs mkString("", sep, "")
+
+            xs.mkString 等价于 xs mkString "
+            mkString方法还有名为addString的变体，它可以把构建好的字符串添加到StringBuilder对象中，而不是作为结果返回：
+
+            scala> val buf = new StringBuilder
+            mkString和addString方法都继承自List的超特质Iterable,因此他们可以应用到各种可枚举的集合类上

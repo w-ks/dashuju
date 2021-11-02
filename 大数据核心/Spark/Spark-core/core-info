@@ -1,0 +1,60 @@
+spark 核心编程
+spark计算框架为了能够进行高并发和高吞吐的数据处理，封装了三大数据结构，用于处理不同的应用场景，三大数据结构分别是
+    RDD：弹性分布式数据集
+    累加器：分布式共享只写变量
+    广播变量：分布式共享只读变量
+
+1.
+RDD 最小计算单元 如果有新的逻辑 进行RDD关联 数据处理方式类似IO流，也有装饰着设计模式
+    RDD数据只有在调用collect方法时 才会真正执行业务逻辑操作，之前的封装全部都是功能的扩展
+    RDD 是不保存数据的，但是 IO可以临时保存一部分数据
+
+RDD 五大核心属性
+    分区列表 执行并行计算(分布式) getPartition 获取分区列表
+    分区计算函数 计算逻辑相同compute
+    RDD间的依赖关系 多个RDD之间的依赖关系getDependencies
+    分区器器（可选） 当数据为 KV 类型数据时，可以通过设定分区器自定义数据的分区
+    最佳的计算位置 计算数据时，可以根据计算节点的状态选择不同的节点位置进行计算
+
+RDD 数据模型对象里的方法 => 算子
+    1. 转换：功能的补充和封装，将旧的RDD包装成新的RDD
+        1.单value类型
+          flatMap,map,mapPartitions,mapPartitionsWithIndex,glom,
+          groupBy,filter,sample,distinct,coalesce,repartition,sortBy
+          max,sum,min
+
+        2.双value类型 (两个数据源之间的关联操作)
+          intersection,union,subtract,zip
+
+        3.key-value类型
+          partitionBy,reduceByKey,groupByKey,groupBy
+          aggregateByKey,foldByKey,combineByKey,sortByKey,sortBy
+          join,leftOuterJoin,rightOuterJoin,cogroup,
+
+    2.行动：触发任务的调度和作业的执行
+          collect,reduce,count,first,take,takeOrdered
+          aggregate,fold,countByKey,countByValue
+          saveAsTextFile,saveAsObjectFile,saveAsSequenceFile
+          textFile,objectFile,sequenceFile
+          foreach,cache,persis，checkpoint,Partitioner
+
+2.累加器
+    context.longAccumulator("name")
+3.广播变量
+    context.broadcast(map)
+4. Array转RDD
+    context.parallelize(=array=)
+
+5.多项选取
+        data.take(1).mkString(",") + "," + time1 + "," + data(2) + "," + time3 + "," + data.takeRight(data.length - 4).mkString(",")
+
+6.分区结合 ***
+    repartition
+
+
+
+
+
+
+
+

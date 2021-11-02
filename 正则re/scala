@@ -1,0 +1,32 @@
+正则表达式
+    1. matches 模式匹配
+        _.matches(r)  _匹配r 返回bool
+
+    
+    
+    2. 正则 """ 不用转义  表达式后.r 代表此为正则
+        val r = '''(a)(b)'''.r
+
+    3. match 可用case 模式匹配
+
+    4. 'ab'.match(
+        case r(x,y) => println(x) //x为第1个分组结果，可以匹配多个分组
+    )
+
+    5.findFirstMatchIn() 返回第一个匹配（Option[Match]）
+
+    6. 分组处理
+        findAllMatchIn().toList => List[Regex.Match]
+
+    7.字符串处理
+      1.字符串中替换
+          replaceFirstIn("长字符串","需要替换成什么字符")
+          replaceAllIn("长字符串","需要替换成什么字符")
+
+      2.字符串中查找：findAllIn().toList => list[String]
+
+        字符串中查找：_用来扔掉不需要的数据，_*用于句末
+            val date = """(\d\d\d\d)-(\d\d)-(\d\d)""".r
+    "       2014-05-23" match {
+            case date(year, _*) => println("The year of the date is " + year)
+

@@ -1,0 +1,3 @@
+order by -？ 通过什么由大到小排序
+order by -？ limit 10; 排序后选取前十位数据
+name like 'L%'; 模糊查询name中L开头的字段

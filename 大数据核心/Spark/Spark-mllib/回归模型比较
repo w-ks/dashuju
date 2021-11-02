@@ -1,0 +1,10 @@
+回归模型种类
+    线性模型
+    最小二乘回归模型
+    应用L2正则化时--岭回归(ridge regression)
+    应用L1正则化时--LASSO(Least Absolute Shrinkage and Selection Operator)
+    决策树
+    不纯度度量方法：方差
+
+    与销量有关的字段可进行预测的
+        收藏、

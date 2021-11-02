@@ -1,0 +1,64 @@
+预测自变量与因变量的关系
+    连续值的预测，譬如明天气温多少度，PM2.5有多少，网站PV等等。
+
+    1.训练集和测试集的随机划分
+
+        import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
+        import org.apache.spark.ml.feature.{MinMaxScaler, MinMaxScalerModel, OneHotEncoderEstimator, OneHotEncoderModel, StringIndexer, StringIndexerModel, VectorAssembler}
+        import org.apache.spark.ml.regression.{LinearRegression, LinearRegressionModel, LinearRegressionSummary, LinearRegressionTrainingSummary}
+        import org.apache.spark.{SparkConf, SparkContext}
+        import org.apache.spark.sql.functions.{regexp_extract}
+
+        val random = new Random()
+        import session.implicits._
+        
+        // 选择 特征列和标签列 => 密集向量 => 定义随机数为数据顺序打乱重排
+        val data: DataFrame = df.select("square_feet", "price").map(
+        row => (Vectors.dense(row.getString(0).toDouble), Vectors.dense(row.getAs[String](1).toDouble), random.nextDouble()).toDF("square_feet", "price", "rand").sort("rand").
+        toDF("square_feet", "price","rand")
+        
+        // 切分训练集和测试集
+        val Array(train, test) = data.randomSplit(Array(0.7, 0.3))
+        train.show()  // 测试集展示
+        // 创建线性回归模型 训练训练集
+        val linearRegressionModel: LinearRegressionModel = new LinearRegression().setMaxIter(10).setStandardization(true).setFeaturesCol("feature").setLabelCol("price").fit(train)
+        //  转置测试集
+        val df2: DataFrame = linearRegressionModel.transform(test)
+
+        // 线性测试误差
+                                可指定测试集/训练集总结
+        val summary1: LinearRegressionSummary = linearRegressionModel.evaluate(test)
+
+        println(summary1.r2)
+        println(summary1.meanSquaredError)
+        println(summary1.rootMeanSquaredError)
+
+        // 评估
+
+    //Y=w*x+b 回归系数(w) and 截距(b)
+    println(s"Coefficients: ${lrModel.coefficients} Intercept: ${lrModel.intercept}")
+    //总结训练集上的模型并打印出一些指标
+    val trainingSummary = lrModel.summary
+    println(s"numIterations: ${trainingSummary.totalIterations}")
+    println(s"objectiveHistory: [${trainingSummary.objectiveHistory.mkString(",")}]")
+    trainingSummary.residuals.show()//残差
+    println(s"RMSE: ${trainingSummary.rootMeanSquaredError}")//均方根误差
+    println(s"r2: ${trainingSummary.r2}")//判定系数，也称为拟合优度，越接近1越好
+
+L1正则化和L2正则化可以看做是损失函数的惩罚项。对于线性回归模型，使用L1正则化的模型建叫做Lasso回归，使用L2正则化的模型叫做Ridge回归（岭回归）。下图是 Python 中Lasso回归的损失函数，式中加号后面一项α||w||1 即为L1正则化项。
+
+下图是Python中Ridge回归的损失函数，式中加号后面一项α||w||22即为L2正则化项。
+
+结合setRegParam(),该函数为设置正则化参数，结合以上描述
+推测spark ml的线性规划完整函数为：min(1/2n||coefficients*x -y||^2^ +(elasticNetParam*L1-(1-elasticNetParam)*L2))
+也就是说：正则化参数设置为0时，elasticNetParam的设置无意义。
+
+
+问题
+    Exception in thread "main" java.lang.IllegalArgumentException: requirement failed: Column favorite_count must be of type org.apache.spark.ml.linalg.VectorUDT@3bfc3ba7 but was actually org.apache.spark.mllib.linalg.VectorUDT@f71b0bce.
+    导入jar包出错:
+    如果您的Spark> 2.x导入
+    org.apache.spark.ml.linalg.Vector
+    并不是
+    org.apache.spark.mllib.linalg.Vector
+

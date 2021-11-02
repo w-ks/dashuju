@@ -1,0 +1,22 @@
+1.get_json_object
+    {"store":
+        {"fruit":[{"weight":8,"type":"apple"},{"weight":9,"type":"pear"}],
+        "bicycle":{"price":19.95,"color":"red"}
+        },
+    "email":"amy@only_for_json_udf_test.net",
+    "owner":"amy"
+    }
+
+    可以使用以下查询来提取json对象的字段：
+    hive> SELECT get_json_object(src_json.json, '$.owner') FROM src_json;
+            amy 
+    hive> SELECT get_json_object(src_json.json, '$.store.fruit[0]') FROM src_json;
+            {"weight":8,"type":"apple"}   
+    hive> SELECT get_json_object(src_json.json, '$.non_exist_key') FROM src_json;
+            NULL
+
+2.json_tuple(string jsonStr,string k1,...,string kn)  	
+    接收JSON字符串和一组n个键，并返回n个值的元组。这是get_json_objectUDF的一种更有效的版本，因为它只需一次调用就可以获取多个密钥。
+
+
+

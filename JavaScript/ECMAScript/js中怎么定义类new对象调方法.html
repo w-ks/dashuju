@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>new类的定义</title>
+</head>
+
+<body>
+    <!-- js中定义类和函数方式基本相同
+            第一种：
+                function 类名(形式参数列表){
+
+                    this.属性名 = 参数;
+                    this.属性名 = 参数;
+
+                    this.方法名 = function()
+
+                }    
+        
+            第二种：
+                类名 = function(形式参数列表){
+
+                    this.属性名 = 参数;
+                    this.属性名 = 参数;
+
+                    this.方法名 = function()
+
+                }    
+        
+            -->
+    <script>
+        function sayhello() {
+            alert(typeof(sayhello))
+        }
+
+        //关键看你怎么调用，如果没有new运算符调用，表示普通函数调用，不会再堆中new对象.
+        sayhello()
+
+        //使用new运算符去调用这个函数，显然是把它当做一个类去看待，这个会导致浏览器的堆当中开辟一个新对象！
+        var obj = new sayhello() // obj是一个引用,保存内存地址指向对象
+
+        Emp = function(x, y, z) {
+            //属性 
+            this.empno = x;
+            this.ename = y;
+            this.sal = z;
+            //方法 
+            this.work = function() {
+                alert(this.ename + " <-ename is working!!!")
+            }
+        }
+
+        // 创建对象
+        var e = new Emp();
+        e.work();
+
+        var e2 = new Emp(111);
+        e2.work();
+
+        var e3 = new Emp(2222, "KING");
+        e3.work();
+        var e4 = new Emp(3333, "SMITH", 800);
+        e4.work();
+        //给Emp动态的扩展方法呢?
+        //后期动态扩展的方法 
+        Emp.prototype.getSal = function() {
+            alert("扩展方法")
+        }
+        e.getSal()
+    </script>
+</body>
+
+</html>

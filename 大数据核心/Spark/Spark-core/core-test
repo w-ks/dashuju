@@ -1,0 +1,95 @@
+小功能：
+    wordCount => RDD.test
+    wordCountSort =>RDD.Demo
+
+    分布式计算 => fenbushi -> info.txt
+
+    flatMap => operator.Flat (不同RDD扁平化)
+
+    map,mapPartitions => operator.Par (map分区并行 *)
+
+    mapPartitions,mapPartitionsWithIndex 的妙用 => operator.test (分区最大值，筛选，索引)
+
+    glom => operator.glom (int => List,分区最大值 求和)
+
+    groupBy => operator.groupBy (根据数据奇偶数、首字母分组、获取每个时间段访问量)
+
+    filter,startsWith => operator.filter (筛选计数，获取日志某一日数据)
+
+    sample => operator.sample (抽取样本，数据倾斜(shuffle)时可用来 判断具体数据倾斜)
+
+    distinct => operator.distinct (去重)
+
+    coalesce,repartition => operator.coalesce (缩小分区，扩大分区)
+
+    sortBy,toInt => operator.sortBy (根据键降序排序)
+
+    intersection,union,subtract,zip => operator.intersection (交集,并集,差集,拉链)
+
+    partitionBy => operator.partitionBy (数据重分区，可自定义分区规则)
+
+    reduceByKey => operator.reduceByKey (根据key进行聚合)
+
+    groupBy,groupByKey => operator.groupByKey (根据key进行分组，根据_分组)
+
+    aggregateByKey,foldByKey,mapValues,max,Int.MinValue  => operator.aggregateByKey (数据分区内 分区间操作 求相同key的平均值)
+
+    combineByKey => operator.combineByKey (获取相同key的平均值)
+
+    mixKV => operator.mixKV (combineByKey,aggregateByKey,foldByKey,reduceByKey 的区别)
+
+    join => operator.join (相同key的v连接)
+
+    leftOuterJoin,rightOuterJoin=> operator.leftOuterJoin (左右连接)
+
+    cogroup => operator.cogroup (类似join等返回迭代器)
+
+    案例 => operator.Anli (统计各省份各广告被点击数量排行的前三名)
+
+
+ >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ >>>>>>>>>>>>>>>>>>>>>>>>>>***********行动算子***********>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+    reduce,collect,count,first,take,takeOrdered => action.reduce (单词如其名)
+
+    aggregate,fold => action.aggregate (数据分区内分区间计算)
+
+    countByKey,countByValue => action.countByKey (KV计算key的出现次数，V计算V出现次数)
+
+    wordCount的多种实现方式 => action.MoreWordCount (groupBy,groupByKey,reduceByKey,aggregateByKey,foldByKey,combineByKey,countByKey,countByValue)
+
+    saveAs => action.saveAs (saveAsTextFile,saveAsObjectFile,saveAsSequenceFile)
+
+    foreach => action.foreach (collect后foreach 和 foreach 分布式遍历 ！！！ 算子)
+
+
+ >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ >>>>>>>>>>>>>>>>>>>>>>>>>>***********功能实现***********>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+    序列化 => action.Xuliehua ()
+
+    toDebugString,dependencies => (变量血缘关系,窄依赖、宽依赖)
+
+    cache，persis，checkpoint  => action.persis(缓存=> 当数据需要重复读取时-RDD持久化,检查点 三者区别)
+
+    Partitioner,partitionBy => action.part (自定义数据分区规则 )
+
+
+ >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ >>>>>>>>>>>>>>>>>>>>>>***********数据结构二、累加器***********>>>>>>>>>>>>>>>>>>>>>>>>>
+
+    longAccumulator => acc.Accumulator (实现分区间的 累加器executor传回driver)
+
+    自定义累加器 => acc.wordCount (继承AccumulatorV2 注册累加器register 实现wordCount)
+
+    广播变量 => acc.broadcast (实现相同key的value拉链)
+
+    判断字符串相等使用.equals方法，不用==，
+    判断null用==NUL
+
+    val header = rdd.first()   除第一条
+    val rdd2: RDD[String] = rdd.filter(_ != header)
+
+

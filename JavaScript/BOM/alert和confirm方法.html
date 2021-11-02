@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>alert和confirm方法</title>
+</head>
+
+<body>
+
+    <script>
+        function sayhello() {
+            alert('hello world')
+        }
+
+        function del() {
+            // confirm确认框返回bool类型的值
+            if (confirm('亲，确认删除数据吗~~~')) {
+                alert('亲，正在删除数据请稍等...')
+            }
+
+        }
+        
+    </script>
+    <input type="button" value="hello" onclick="sayhello()">
+    <input type="button" value="删除" onclick="del()">
+    
+</body>
+
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>js的内置对象</title>
+</head>
+
+<body>
+    <!-- 
+        关于js的数组
+            1.第一种和python的列表类似
+            2.第二种调用Array
+        关于Array的常用方法  和python类似
+            join方法
+            pop方法
+            push方法
+            reverse方法
+     -->
+    <script>
+        // 创建数组的第二种方式
+        var arr1 = new Array() // 创建长度为0的数组
+        console.log(arr1.length) //0
+
+        var arr2 = new Array(3) // 创建长度为3的数组
+        console.log(arr2.length) //3
+
+        for (var i = 0; i < arr2.length; i++) {
+            // 3个undefined
+            console.log('---->' + arr2[i])
+        }
+
+        var arr3 = new Array(1, 2, 5.14, '234', 'wet')
+        console.log(arr3.length)
+
+        arr3[1] = '修改数组 '
+
+        for (var i = 0; i < arr3.length; i++) {
+
+            console.log('$$$$====>' + arr3[i])
+        }
+    </script>
+</body>
+
+</html>

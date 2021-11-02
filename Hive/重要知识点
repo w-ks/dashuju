@@ -1,0 +1,308 @@
+hive练习
+
+日期处理函数 (关于日期函数详见Hive常用函数)
+    1.select date_format("2015-6-15","yyyy/mm/dd");  注意只能是yyyy-mm-dd格式的进行格式化操作
+    
+    2.select date_add("2015-6-15",-5);
+    
+    3.datediff("2015-6-15","2015-04-11")
+    
+    # 根据身份证 查看我活了多少岁了 精确到小数点6位
+            逻辑：提取身份证-> 转换为时间戳 -> 转换为指定格式(出生日期) -> 与当前时间比较(天) -> 天/365 (岁) -> 保留小数
+    4.select round(datediff(current_timestamp,(from_unixtime(unix_timestamp((substr('372328200107150311',7,8)),'yyyyMMdd'),'yyyy-MM-dd')))/365,6) as year;
+
+    日期转秒函数: second 日期转周函数:weekofyear
+    
+    5.next_day(start_date, day_of_week) - 返回第一个日期，该日期晚于start_date，并按指示命名。
+        start_date是格式为“yyyy-MM-dd HH:mm:ss”或“yyyy-MM-dd”的字符串。day_of_week是一周中的哪一天(如:星期二，星期五)
+            > SELECT next_day('2015-01-14', 'TU') FROM src LIMIT 1;
+                '2015-01-20'
+
+    6.months_between(date1, date2) - 返回日期date1和date2之间的月份数
+            > SELECT months_between('1997-02-28 10:30:00', '1996-10-30');
+                3.94959677
+    7.add_months(start_date, num_months) - 返回start_date之后的num_months日期
+        start_date 格式为“yyyy-MM-dd HH:mm:ss”或“yyyy-MM-dd”的字符串。Num_months是一个数字。start_date的时间部分被忽略
+        > SELECT add_months('2009-08-31', 1) FROM src LIMIT 1;        '2009-09-30'
+    
+
+
+处理json
+    get_json_object(col,'$.keyName')
+        获取object 根据keyName
+    json_tuple(jsonStr, k1, k2, ...)  返回一个类似于函数 get_json_object 的元组，但它有多个名称。所有的输入参数和输出列类型都是字符串
+        SELECT json_tuple('{"a":1, "b":2}', 'a', 'b');   1  2
+    from_json
+    from_json(jsonStr, schema[, options]) - 返回具有给定jsonStrand的结构值schema。
+        > SELECT from_json('{"a":1, "b":0.8}', 'a INT, b DOUBLE');
+        {"a":1,"b":0.8}
+        > SELECT from_json('{"time":"26/08/2015"}', 'time Timestamp', map('timestampFormat', 'dd/MM/yyyy'));
+        {"time":2015-08-26 00:00:00}
+
+array操作
+    array 创建数组/可强转
+    array_contains(array, value) 数组包含- 如果数组包含value则返回TRUE
+        SELECT array_contains(array(1, 2, 3), 2) FROM src LIMIT 1;   true
+    sort_array(array(obj1, obj2,...)) - 根据数组元素的自然顺序对输入数组按升序排序
+
+
+
+函数展示
+    1．查看系统自带的函数
+    hive> show functions;
+    2．显示自带的函数的用法
+    hive> desc function upper;
+    3．详细显示自带的函数的用法
+    hive> desc function extended upper;
+
+load data local inpath"/usr/local/data" into table test
+
+表列操作
+
+    修改列信息/列名/类型
+    ALTER TABLE jsontest CHANGE jj jj_new array<string>;
+                修改为数组<字符串>类型
+
+    复制表结构创建表
+    create table if not exists table2 like table1;
+
+    替换列
+    alter table dept_partition replace columns(deptno string, dname string, loc string);
+
+
+    创建以'\t'分割的表	
+        create table test(id string,age int) row format delimited fields terminated by '\t';
+
+    访问三种集合列里的数据，以下分别是ARRAY，MAP，STRUCT的访问方式
+        select ARRAY[1],MAP['key'],STRUCT.age from temp;
+
+    外部表 external
+        create external table test(id string,age int) row format delimited fields terminated by '\t';
+
+    分区 
+        partition
+
+# 删除某一行
+    insert overwrite table emp_age2 select age from emp_age2 where age !=10;
+    insert into table 插入
+    insert overwrite table 覆盖
+
+rlike
+    正则表达式匹配
+        select from lxw_dual where 'footbar’ rlike '^f.*r$’;
+            1
+    注意：判断一个字符串是否全为数字：
+        select 1from lxw_dual where '123456' rlike '^\\d+$';
+            1
+
+
+1. If函数: if
+
+    语法: if(boolean testCondition, T valueTrue, T valueFalseOrNull)
+    说明: 当条件testCondition为TRUE时，返回valueTrue；否则返回valueFalseOrNull
+
+2. 非空查找函数: COALESCE
+
+    语法: COALESCE(T v1, T v2,…)
+    说明: 返回参数中的第一个非空值；如果所有值都为NULL，那么返回NULL
+
+3. 条件判断函数：CASE
+    语法: CASE a WHEN b THEN c [WHEN d THEN e]* [ELSE f] END
+    说明：如果a等于b，那么返回c；如果a等于d，那么返回e；否则返回f
+
+
+4.(1)正则表达式替换函数：regexp_replace
+    语法: regexp_replace(string A, string regexp, string C)
+    将字符串A中的符合java正则表达式 regexp 的部分替换为C。注意，在有些情况下要使用转义字符,类似oracle中的regexp_replace函数。
+    select regexp_replace('foobar', 'oo|ar', '') from lxw_dual;
+        fb
+  (2) 正则匹配:regexp
+        regexp -如果str匹配regexp则返回true，否则返回false
+        Synonyms: rlike
+            > SELECT 'fb' regexp '.*' FROM src LIMIT 1;
+        true
+  (3) 正则提取：regexp_extract
+        regexp_extract(str, regexp[, idx]) - 提取匹配 regexp的组
+            > SELECT regexp_extract('100-200', '(\d+)-(\d+)', 1) FROM src LIMIT 1;
+                '100'
+
+    
+
+
+# 1.Hive表中load数据时，过滤首行表头
+
+    1.shell命令
+
+        思想：在load数据之前，将原数据的第一行去掉，其余数据定向输出到一个新文件里，然后我们用新文件的数据加载表
+
+        sed -i '1d' filename
+
+        范围删除，删除1-3行
+        sed -i '1,3d' filename
+
+        删除第n行
+        sed -i 'nd' filename
+
+        删除最后一行
+        sed -i '$d' filename
+        cat tmp_res.csv
+
+	2. alter table table_name set tblproperties('skip.header.line.count'='1');
+	
+    3.建表的时候就过滤掉脏数据
+        create table tableName(字段名称 字段类型，字段名称 字段类型， ....)
+        row format delimited fields terminated by ','--逗号分隔
+        tblproperties("skip.header.line.count"="1")  --跳过文件行第一1行
+
+596+341+431+259
+窗口函数
+    jack,2017-04-15,58
+    （1）查询在2017年4月份购买过的顾客及总人数
+    select         !!     !!
+        name,count(*) over()
+    from
+        table_name
+    where
+        substr(orderdate,1,7)='2017-04'
+    
+行转列
+        1.concat(string A/col, string B/col…) -返回输入字符串连接后的结果，支持任意个输入字符串;
+
+        2.concat_ws(separator, str1, str2,...)：它是一个特殊形式的 concat()
+        
+        3.collect_set(col)：函数只接受基本数据类型，它的主要作用是将某字段的值进行去重汇总，产生array类型字段
+
+列转行 
+        explode等UDTF一起使用，它能够将一列数据拆成多行数据，在此基础上可以对拆分后的数据进行聚合。(col)：将hive一列中复杂的array或者map结构拆分成多行。
+            lateral view
+            用法：lateral view udtf(expression) tableAlias AS columnAlias
+            解释：用于和split, explode等UDTF一起使用，它能够将一列数据拆成多行数据，在此基础上可以对拆分后的数据进行聚合。
+        
+        explode (map<Tkey,Tvalue>) as (k,v)
+            select explode(map('A',10,'B',20,'C',30)) as (key,value);                
+                 key     value
+                 A	     10
+                 B	     20
+                 C	     30
+        explode(a) - 将数组a的元素分隔为多行，或将一个数组的元素映射为多行和多列
+                select explode(split("20#23#32#12#32#42#43#23#12#22#14#12","#"));
+
+        explode 配合lateral view 生成侧图
+        select movie, category_name from movieExplode lateral view explode(split(category,",")) table_tmp as category_name;
+
+        posexplode(a) - posexplode类似于数组的explode，但包含原始数组中项的位置
+                select posexplode(split("fs|ac|Fs|fg","\\|"));
+                        【0	fs】 \n 【1	ac】 \n 【2	Fs】
+
+        
+数字操作 不常用 
+    [指定精度] 取整函数 (四舍五入): round 
+    语法: round(double a, int d)
+
+    向下取整函数 (返回小于或等于的最大整数): floor 
+    语法: floor(double a)
+
+    向上取整函数: ceil
+
+    取随机数函数: rand
+    语法: rand(),rand(int seed)
+    返回值: double
+    说明:返回一个0到1范围内的随机数。如果指定种子seed，则会等到一个稳定的随机数序列
+
+    二进制函数: bin
+    语法: bin(BIGINT a)  返回值: string
+    说明:返回a的二进制代码表示
+
+    十六进制函数: hex
+    语法: hex(BIGINT a)
+
+    反转十六进制函数: unhex
+    语法: unhex(string a)
+    返回值: string
+    说明:返回该十六进制字符串所代码的字符串
+
+    进制转换函数: conv
+    语法: conv(BIGINT num, int from_base, int to_base)
+
+    绝对值函数: abs
+    语法: abs(double a) abs(int a)
+    返回值: double int
+
+    正取余函数: pmod 相当于 %
+    语法: pmod(int a, int b),pmod(double a, double b)
+    说明:返回正的a除以b的余数
+
+    negative函数: negative
+    语法: negative(int a), negative(double a)
+    说明:返回-a
+
+    sign(x) - 返回x的符号 (-1,0,1)
+
+自定义函数
+    （1）UDF必须要有返回类型，可以返回null，但是返回类型不能为void
+添加列
+    alter table dept_partition add columns(deptdesc string);
+
+Java自定义函数 
+
+    (1) 继承org.apache.hadoop.hive.ql.UDF
+    (2) 需要实现evaluate函数；evaluate函数支持重载；
+    (3) 在hive的命令行窗口创建函数
+        a) 添加jar
+            add jar linux_jar_path
+        b) 创建function，
+            create [temporary] function [dbname.]function_name AS class_name;
+    (4) 在hive的命令行窗口删除函数
+        Drop [temporary] function [if exists] [dbname.]function_name;
+    (5）注意事项
+        (1) UDF必须要有返回类型，可以返回null，但是返回类型不能为void；
+
+
+    1.
+        import org.apache.hadoop.hive.ql.exec.UDF;
+        // 使用apache的数据结构
+        import org.apache.hadoop.io.Text;
+        // 继承 UDF类
+        public class MyUDF extends UDF {
+        // 定义evaluate方法
+        public Text evaluate(Text s) {
+            if (s ==null){
+                return null;
+            }
+            return new Text(s.toString().toLowerCase());
+        }
+        }
+    注意！！ 使用package工具打包
+    2.
+        add jar linux_jar_path
+    注意！！ jar包在linux的路径
+
+    3.
+        create [temporary] function [dbname.]function_name AS class_name;   
+    注意！！ 创建自定义函数可指定数据库  最后的class_name 是打包前的packagePath.class
+
+hive导出
+    1.Hadoop命令导出到本地
+        hive (default)> dfs -get /user/hive/warehouse/student/month=201709/000000_0
+        /opt/module/datas/export/student3.txt;
+    2.Hive Shell 命令导出
+        `基本语法：（hive -f/-e 执行语句或者脚本 > file）
+        [atguigu@hadoop102 hive]$ bin/hive -e 'select * from default.student;' >
+        `/opt/module/datas/export/student4.txt;
+    3. Export导出到HDFS上
+        (defahiveult)> export table default.student to
+        '/user/hive/warehouse/export/student';
+    4. Sqoop导出
+
+ dfs -get /user/hive/warehouse/hoteldata.db/table3_3 /home/hadoop/file3_3
+
+
+create table rawdata (
+    seq varchar(100),jiudian varchar(100),country varchar(100),province varchar(100),city varchar(100),shangquan varchar(100),xingji varchar(100),yewubumen varchar(100),fangjianshu int,tupianshu varchar(100),pingfen varchar(100),pinglunshu varchar(100),chengshipingjunshizhujianye varchar(100),jiudianzongdingdan varchar(100),jiudianzongjianye varchar(100),jiudianshizhudingdan varchar(100),jiudianshizhujianye varchar(100),jiudianzhixiaodingdan varchar(100),jiudianzhixiaojianye varchar(100),jiudianzhixiaoshizhudingdan varchar(100),jiudianzhixiaoshizhujianye varchar(100),jiudianzhixiaojudan varchar(100),jiudianzhixiaojudanlv varchar(100),chengshizhixiaodingdan varchar(100),chengshizhixiaojudanlv varchar(100),judanlvshifouxiaoyudengyuzhixiaochengshijunzhi varchar(100)
+)charset=utf8;
+
+请根据数据清洗的输出数据集，先建立Hive外表external_data_table
+编写HQL语句 统计各城市的住宿场所出租率，
+以 各城市住宿场所 出租率 降序排列并输出 前10条统计结果，
+同时创建并写入数据表 table3_4要求输出字段包含： 
+省份、城市、住宿场所出租率。

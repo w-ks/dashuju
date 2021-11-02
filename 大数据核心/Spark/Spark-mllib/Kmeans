@@ -1,0 +1,109 @@
+1.  数据预处理
+    
+    1. 哑变量 ml
+        sql => 将字段数值化 => 对数值化进行有效位编码
+                new StringIndexer()
+                .setInputCol("address")
+                .setOutputCol("addressIndex")
+                .fit(in1DF)
+                val in2DF: DataFrame = in2.transform(in1DF)
+                //对性别这列进行 有效位编码   // One-hot的作用是什么？为什么不直接使用数字作为表示？
+                                            One-hot 主要用来编码类别特征，即采用哑变量(dummy variables) 对类别进行编码。它的作用是避免因将类别用数字作为表示而给函数带来抖动。
+                                            直接使用数字会给将人工误差而导致的假设引入到类别特征中，比如类别之间的大小关系，以及差异关系等等
+                val inVec: OneHotEncoderModel = new OneHotEncoderEstimator()
+                .setInputCols(Array("sexIndex", "addressIndex"))
+                .setOutputCols(Array("sexVec", "addressVec"))
+                .fit(in2DF)
+                val inVecDF: DataFrame = inVec.transform(in2DF)
+    2. 归一化
+        最大最小归一化
+            val da = new MinMaxScaler().setInputCol("feature").setOutputCol("scalarfeature")
+            val scalar = da.fit(data)
+            val scalarnum = scalar.transform(data)
+
+
+2. main
+    (1).mllib
+    //  将数据转换为  RDD[linalg.Vector]
+        读取RDD文件 将字段分割并转换为Double 传到 Vectors.dense()
+        利用cache()   缓存重复读取
+        val parsedData: RDD[linalg.Vector] = data.map(s => Vectors.dense(s.split(' ').map(_.toDouble))).cache()
+         // 新建KMeans聚类模型，并训练
+            val initMode = "k-means||"      // k-means|| 算法选择初始中心点
+            val numClusters = 4
+            val numIterations = 100
+            val model: KMeansModel = new KMeans().
+              setInitializationMode(initMode).
+              setK(numClusters).
+              setMaxIterations(numIterations).
+              run(parsedData)
+
+        session.sparkContext
+        
+        feature 特征
+        Vectors.dense 转换为向
+        transform 预测  model.predict(测试集) label 标签 输出
+        fit 训练
+
+    (2).ml  
+            1.将 特征=> 向量
+            al assembler: VectorAssembler = new VectorAssembler().setInputCols(Array("SHYWB_StrIndMod_Vec", "kdj_gyh",  "jds_gyh","hao_ping_bi")).setOutputCol("features")
+            val df7: DataFrame = assembler.transform(df6)
+
+            df7.show()
+            2.将得到的向量 => kmeans
+            val kmodel:KMeansModel=new KMeans().
+            setK(4).
+            setMaxIter(2000).
+            setFeaturesCol("features").  //
+            setPredictionCol("predict").
+            fit(df7)
+
+            3.val result:DataFrame=kmodel.transform(df7)
+
+            4.模型评估
+                model.computeCost()
+
+        常用方法
+            new VectorAssembler() transform  new KMeans().setFeaturesCol("特征列").setPredictionCol("预测列").
+            fit(训练数据) save 保存模型 computeCost 误差评估 transform 转置 fit 训练
+
+        
+4.
+    特征  属性 (归一化、哑变量)
+
+
+5.  package
+        ml.MinMaxScaler
+        ml.feature.{OneHotEncoderEstimator, OneHotEncoderModel, StringIndexer, StringIndexerModel}
+        ml.linalg.Vectors
+        ml.clustering.{KMeans, KMeansModel}
+        mllib.{KMeans, KMeansModel}
+        mllib.linalg.{Vectors,Vector}
+
+
+
+1.KMeans算法
+    核心
+        K-means 是我们最常用的基于欧式距离的聚类算法，其认为两个目标的距离越近，相似度越大。
+
+  ■ KMeans算法的基本思想是初始随机给定K 个簇中心,按照最邻近原则把待分类样本点分到各个簇。然后按平均法重新计算各个簇的质心，从而确定新的簇心。一直迭代,直到簇心的移动距离小于某个给定的值。
+
+  ■ KMeans聚类算法主要分为3个步骤。
+      1) 第1步是为待聚类的点寻找聚类中心
+      2) 第2步是计算每个点到聚类中心的距离,将每个点聚类到离该点最近的聚类中去;
+      3) 第3步是计算每个聚类中所有点的坐标平均值,并将这个平均值作为新的聚类中心。反复执行2)、3),        直到聚类中心不再进行大范围移动或者聚类次数达到要求为止。
+
+  ■ k-means++ 算法选择初始中心点的基本思想就是:初始的聚类中心之间的相互距离要尽可能远。初始化过程如下。
+      1) 从输入的数据点集合中随机选择一个点作为第一个聚类中心;
+      2) 对于数据集中的每一个点x,计算它与最近聚类中心(指已选择的聚类中心)的距离D(x);
+      3) 选择一个新的数据点作为新的聚类中心,选择的原则是:D(x)较大的点,被选取作为聚类中心的概率较        大;
+      4) 重复2)和3),直到k个聚类中心被选出来;
+      5) 利用这k个初始的聚类中心来运行标准的 KMeans算法。
+
+     kmeans.train(k,maxIterations,runs,initializationMode,initializationSteps,epsilon,seed)
+     参数： k 聚类数量；    maxIterations 最大迭代次数；   runs 并行度
+           initializationMode 初始中心点选择方法(支持random or k-means||)；                initializationSteps 迭代步长
+           epsilon 中心距离阈值；   seed 随机种子；
+
+

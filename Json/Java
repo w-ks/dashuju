@@ -1,0 +1,99 @@
+一、Java中Json格式总结 
+
+    1.  
+            [详细fastjason请看 E://hdfscode//json_learn]
+    快速读取 json 文件
+    String path = "E://path";
+    String json = FileUtils.readFileToString(new File(path), "UTF-8");
+
+        注意：fastjson使用为mapreduce 需使用来自具有依赖项的模块
+    ！！！详细案例
+
+            常用API
+                JSONObject.parseObject(jsonStr) 将字符串=> json
+                getString 从JSONObject => 获取键值
+                getJSONArray() 从JSONObject => 获取数组
+                get 获取多项字典 jsonObject => Object
+
+            一键一值 jsonObject.getString
+            一键一字典comment{k1:v1,k2:v2...} jsonObject.get("Object")
+                可通过自定义函数提取里面的想要的键
+            一键一列表 (列表包含多字典) 
+                        'parameter': [{k1:v1,k2:v2..},{k1:v1,k2:v2..}{k1:v1,k2:v2..}]
+                    JSONArray parameter = jsonObject.getJSONArray("parameter");
+                    可通过for循环依次得到列表内的每个字典 得到后可根据每个字典判断是否包含想要的key containsKey
+
+
+
+
+
+
+        JSONObject => Map<String,Object>
+        JSONArray => List<Object>
+        [v1,v2...] 数组
+        k:[n1[k:v]] 值嵌套
+        Object	无序集合键值对
+        Array	值的有序序列
+
+    2. 类型转换
+
+        1) String jsonstr => JSONObject
+            JSONObject jsonObj = new JSONObject(jsonStr);
+
+        2) 从JSONObject 中获取数据
+            JavaBean bean = new JavaBean();
+
+        3) 根据属性名称获取int型数据
+            bean.setId(jsonObj.getInt("id"));
+
+        3) 根据属性名获取String数据;
+             bean.setTitle(jsonObj.getString("title"));
+
+        4) 根据属性名获取JSONObject类
+             JSONObject config = jsonObj.getJSONObject("config");
+             bean.setWidth(config.getInt("width"));
+             bean.setHeight(config.getInt("height"));
+
+        5) 根据属性名获取JSONArray数组
+             JSONArray data = jsonObj.getJSONArray("data");
+             for(int index = 0, length = data.length(); index < length; index++) {
+                   }
+
+
+二、	fastjson
+
+    1、	实例化
+        new JSONObject();
+    2、	JSON解析包  (很显然)
+        com.alibaba.fastjson.JSON; 
+        com.alibaba.fastjson.JSONObject;   对象 
+        com.alibaba.fastjson.JSONArray;    数组
+        com.alibaba.fastjson.JSONException; 
+    3、	常用API方法：
+        1) parse(String text)  // 把JSON文本parse为JSONObject或者JSONArray 
+        2) parseObject(String text)  // 把JSON文本parse成JSONObject 
+        3) parseObject(String text, Class clazz)  // 把JSON文本parse为JavaBean 
+        4) parseArray(String text)  // 把JSON文本parse成JSONArray
+        5) parseArray(String text, Class clazz)  //把JSON文本parse成JavaBean集合
+        6) toJSONString(Object object)  // 将JavaBean序列化为JSON文本
+        7) toJSONString(Object object, boolean prettyFormat)  // 将JavaBean序列化为带格式的JSON文本
+        8) toJSON(Object javaObject)  将JavaBean转换为JSONObject或者JSONArray
+
+
+三、	fastjson  【Spark(scala)】
+
+    1、	json解析包
+        com.alibaba.fastjson.JSON
+    2、	常用API
+        1)	实例化：
+            JSON.parseObject(x)
+        2)	默认值：如果该key没有值默认为null：
+            jsonObject.getOrDefault(key,默认值)
+            jsonObject.getOrDefault("name","")
+        3)	获取该key的value值
+            jsonObject.get(json的key)
+            jsonObject.get(“name”)
+        4)	判断key是否存在
+            jsonObject.containsKey(key)
+        5)	添加kv键值对
+            jsonObject.put(key,value)

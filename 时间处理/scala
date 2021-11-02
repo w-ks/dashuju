@@ -1,0 +1,45 @@
+转换日期格式
+    运用 FastDateFormat.getInstance 快速日期格式获取实例
+    定义输入格式 和 目标格式
+
+    目标格式.format(                       // 返回输入格式到目标格式
+        new Date(                         // 创建新Date 传入解析后的数据
+            输入格式.parse(日期目标).getTime()  // 通过输入格式解析日期目标 获取解析后数据
+        )
+   )
+	Pattern pattern = Pattern.compile(paternStr);
+		Matcher matcher1 = pattern.matcher(str);
+		if (matcher1.find()) {
+			System.out.println(matcher1.group(0));
+
+
+2. 当前时间时间戳的快速获取方法 (  SimpleDateFormat 格式化日期  )
+    val dateFormat = new SimpleDateFormat("yyyy/MM/dd")
+    val dateFormat2 = new SimpleDateFormat("yyyy-MM-dd")
+    val parseDate:Date = dateFormat.parse(date) # 传入解析date
+    val timeStamp = parseDate.getTime()    # 获取时间戳
+#   1. 当前时间戳快速转换日期格式 format
+        dateFormat2.format(timeStamp)
+
+        1.一小时的时间戳
+          3,600,000
+          一天的时间戳
+          86400000
+          一个月的时间戳
+          2592000000
+          一年的时间戳
+          31104000000
+
+// 六点前
+    
+select 
+    sum(if()-
+        (unix_timestamp(updated_at,'yyyy/MM/dd')+64800)<0 and 
+        unix_timestamp(updated_at,'yyyy/MM/dd HH:mm')-
+        unix_timestamp(created_at,'yyyy/MM/dd HH:mm')>720,1,0)) beforcount,
+    sum(if(unix_timestamp(updated_at,'yyyy/MM/dd HH:mm')-
+        (unix_timestamp(updated_at,'yyyy/MM/dd')+64800)>0 and 
+        unix_timestamp(updated_at,'yyyy/MM/dd HH:mm')-
+        unix_timestamp(created_at,'yyyy/MM/dd HH:mm')>1080,1,0)) aftercount
+from o1
+

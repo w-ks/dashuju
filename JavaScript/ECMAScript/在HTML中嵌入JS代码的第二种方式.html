@@ -1,0 +1,36 @@
+<!-- 脚本块的位置随意，没有限制 -->
+<script>
+    alert("page begin")
+</script>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在HTML中嵌入JS代码的第二种方式：脚本块的方式</title>
+</head>
+
+<body>
+
+    <!-- 这个按钮会先被加载到浏览器内存 -->
+    <input type="button" value="按钮1">
+
+    <!-- 脚本块 -->
+    <!-- 一个页面中脚本块可以出现多个！ -->
+    <script>
+        // 在这里直接编写JS代码,这些JS代码在页面打开的时候自上而下的顺序依次逐行执行
+        alert("hello world")
+        alert("hello zhangsan")
+        alert("hello lisi")
+    </script>
+    <!-- 最后加载这个按钮2 -->
+    <input type="button" value="按钮2">
+
+</body>
+
+</html>
+
+<script>
+    alert("page end")
+</script>

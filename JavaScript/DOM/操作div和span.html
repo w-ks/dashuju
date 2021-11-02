@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>操作div和span:innerHTML属性和innerText属性</title>
+
+    <style>
+        div {
+            background-color: coral;
+            width: 200px;
+            height: 40px;
+        }
+        
+        #span1 {
+            background-color: hsl(84, 100%, 59%);
+        }
+    </style>
+</head>
+
+<body>
+
+    <script>
+        window.onload = function() {
+            var bt1E = document.getElementById('bt1')
+            bt1E.onclick = function() {
+                // 设置div中的内容
+                var div1E = document.getElementById('div1')
+                    // 通过元素的innerHTML属性来设置内部的内容
+                    // innerHTML 属性会将后面的字符串当做一段HTML代码解释并执行
+                div1E.innerHTML = "<font color ='blue'> 用户名不能为空！</font>"
+
+                // innerText 属性 将后面的字符串看做普通文本
+                // div1E.innerText = "<font color ='blue'> 用户名不能为空！</font>"
+            }
+
+            document.getElementById("bt2").onclick = function() {
+                var spElt = document.getElementById('span1')
+                spElt.innerHTML = '<a href="http://www.baidu.com">百度</a>'
+
+            }
+
+        }
+    </script>
+
+    <input type="button" value="设置div中的内容" id='bt1'>
+    <input type="button" value="设置span中的内容" id="bt2">
+
+    <div id="div1"></div>
+
+    <!-- span的大小会随着span中的内容多少变化而变化 -->
+    <span id="span1"></span>
+</body>
+
+</html>

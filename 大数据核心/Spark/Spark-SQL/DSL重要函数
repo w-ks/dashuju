@@ -1,0 +1,208 @@
+1.  DSL语法
+
+        stat.approxQuantile 近似中位数 df1.stat.approxQuantil
+        
+    1.常用统计函数
+        avg()   平均数 mean() 均值
+        count   计数 可跟据条件查询后 查看总条数
+    stddev: 返回样本的标准偏差(无偏) stddev_pop: 返回样本的方差 sumDistinct 返回表达式中不同值的和。
+
+
+        percentile 百分位数     在hive环境中，可以使用percentile(BIGINT col, p)来查找中位数，但该函数中的列只能使用整型，我们也可以使用percentile_approx()来近似中位数
+        真正的中位数只能用percentile来计算，输入需要为整数类型，使用percentile_approx（输入为浮点型）计算得到的并不是真正的中位数，也就是所说的近似中位数，经过大量数据验证，有时候这个近似中位数和真正的中位数差别还是很大的。
+    
+            1.agg直接求中位数
+            df.groupBy("sex").agg(count("age").as("cnt"), expr("percentile(age, array(0.5))[0]").alias("median") ).show()
+            2.df.createOrReplaceTempView("tmp")
+            spark.sql("select sex, percentile_approx(age, 0.5) as median_age from tmp group by sex").show()        
+            3. where if(cnt%2=0,num in(cnt/2,cnt/2+1),num=(cnt+1)/2)""").show() #数据量非常大时，这里或许可以直接使用
+            4.stat.approxQuantile 近似中位数 df1.stat.approxQuantile
+                如果行数为奇数可直接调用， val median = df1.stat.approxQuantile("t1", Array(0.5), 0.001)(0)
+                        println(median)
+
+                            agg直接求中位数                   spark.sql().show()
+                            +------+---+------+             +------+----------+
+                            |   sex|cnt|median|             |   sex|median_age|
+                            +------+---+------+             +------+----------+
+                            |female|  4|   8.5|             |female|         8|
+                            |  male|  2|   5.5|             |  male|         5|
+                            +------+---+------+             +------+----------+
+
+        mode众数 HIve没有all，any的用法,只能用max来定位出现次数最多的了
+        sc.sql("""SELECT income from test_avg_medium_freq 
+          group by income
+          having count(*)>=(select max(num) from (select count(*) as num from test_avg_medium_freq group by income)) """).show()        
+        
+
+
+    createTempView("")          可根据查询结果赋值变量 创建新表 createOrReplaceTempView()   createOrReplaceGlobalTempView() 全局范围创表     global_temp 全局范围搜索
+
+    withColumn("f1",columnExtucer(0)($"scalarfeature")) 增加列 第一个参数新建列名 第二个参数根据什么创建
+
+    withColumnRenamed(oldcol,newcol)  修改列名
+    drop("删除列")
+
+    
+    去重列 在对spark sql 中的dataframe数据表去除重复数据的时候可以使用dropDuplicates()方法
+        dropDuplicates去重原则：按数据行的顺序保留每行数据出现的第一条
+
+            第一个def dropDuplicates(): Dataset[T] = dropDuplicates(this.columns) 这个方法，不需要传入任何的参数，默认根据所有列进行去重，然后按数据行的顺序保留每行数据出现的第一条。
+            第二个def dropDuplicates(colNames: Seq[String]) 传入的参数是一个序列。你可以在序列中指定你要根据哪些列的重复元素对数据表进行去重，然后也是返回每一行数据出现的第一条
+            第三个def dropDuplicates(colNames: Array[String]) 传入的参数是一个数组，然后方法会把数组转换为序列然后再调用第二个方法
+            第四个def dropDuplicates(col1: String, cols: String*) 传入的参数为字符串，在方法体内会把你传入的字符串组合成一个序列再调用第二个方法。
+
+
+    show(numRows)  可指定展示几行
+
+    df.select(expr("appid as newappid")).show()     转化sql语句
+    expr方法会将方法中的字符串解析成对应的sql语句并执行，上面的例子就是选中appid这一列，并将appid这一列重命名为newappid。
+
+    newSession 新会话
+
+   
+5. DSL 语法
+        (1) 关键字
+                printSchema 当前Dataframe 的结构
+                select
+                $ ' 涉及到运算的时候, 每列都必须使用$, 或者采用引号表达式：单引号+字段名
+                as 别名 | alias
+                filter 过滤
+                groupBy("") 分组 agg聚合 personDataFrame.groupBy("sex").agg("salary" -> "avg","salary" -> "sum" )
+                orderBy        df.orderBy($"salary".desc)
+                data.agg({'B':'mean','C':'sum'})#B列均值，C列汇总  分组后，可以对不同的列采用不同的聚合方法
+                
+                where 使用配合implicits 与$
+                where  DataFrame.where($"age" > 20 && $"sex" === "M" && $"deptNo" === 1).show()  DataFrame.sort($"salary".desc).select("name", "salary", "age").show()
+        
+                sql.functions.lit() 实现给DataFrame添加一列值
+                        直接df.withColumn(“time”,“201905”) 会报错，说没有引用其他列值
+                        方法一： 之前一直用的 df.withColumn(“time”,col(“age”)-col(“age”)+201905)的变种方式
+                        方法二：或者 df.rdd.map(lambda x:(x[0],x[1],x[2],“201905”)).toDF([“name”,“sex”,“age”,“time”])的rdd方式
+                        方法三：最近发现一个sql.functions.lit()函数，直接返回的是字面值
+                        环境spark 2.3.1 zeppelin %pyspark python 2.7
+
+   
+
+
+7.空值处理
+        df.show()
+        val map = Map("age"->30l)
+        df.drop 删除列
+        df.na.drop(minnonnulls) 删除空行 返回最少minnonnulls列不为Null的行 
+
+        df.na.fill(map).show()  空值填充行
+
+        去除空字符串
+        df.where("colname <> '' ")
+
+8.列空值&新增列处理
+        withColumn函数来进行添加列或者替换列<指定的列名字跟之前的一样时候>，然后返回一个新的dataframe，添加列有以下几种方法：
+        1.利用常量进行增加列，固定值
+
+                import org.apache.spark.sql.functions.lit
+                df.withColumn("new_column", lit(1)/lit("name"))  
+
+        2.利用当前已有列变换新增
+
+                df.withColumn("rsrp2", df("rsrp") * 2)
+
+        .isNaN()
+
+        .limit(10)
+
+        // 删除所有列的空值和NaN
+        val resNull=data1.na.drop()
+
+        df.na.fill  value填充值和可指定array列
+        df.na.drop  可指定array列
+
+        //查询空值列
+        data1.filter("gender is null").select("gender").limit(10).show
+        data1.filter( data1("gender").isNull ).select("gender").limit(10).show
+
+        data1.filter("gender<>''").select("gender").limit(10).show
+
+9.字符串处理
+        5.format_string/printf 格式化字符串
+        format_string(strfmt, obj, ...) - Returns a formatted string from printf-style format strings.
+
+        Examples:> SELECT format_string("Hello World %d %s", 100, "days");　　Hello World 100 days
+
+        6.initcap将每个单词的首字母变为大写，其他字母小写; lower全部转为小写，upper大写
+        initcap(str) - Returns str with the first letter of each word in uppercase. All other letters are in lowercase. Words are delimited by white space.
+
+        Examples:> SELECT initcap('sPark sql');　　Spark Sql
+
+        7.length返回字符串的长度
+        Examples:> SELECT length('Spark SQL ');　　10
+
+        9.lpad返回固定长度的字符串，如果长度不够，用某种字符补全，rpad右补全
+        lpad(str, len, pad) - Returns str, left-padded with pad to a length of len. If str is longer than len, the return value is shortened to len characters.
+
+        Examples:> SELECT lpad('hi', 5, '??');　　 ???hi
+
+        10.ltrim去除空格或去除开头的某些字符,rtrim右去除，trim两边同时去除
+        ltrim(str) - Removes the leading space characters from str.
+
+        ltrim(trimStr, str) - Removes the leading string contains the characters from the trim string
+
+        Examples:
+
+        > SELECT ltrim('    SparkSQL   ');　　 SparkSQL
+        > SELECT ltrim('Sp', 'SSparkSQLS');　　 arkSQLS
+
+        11.regexp_extract 正则提取某些字符串，regexp_replace正则替换
+        Examples:> SELECT regexp_extract('100-200', '(\d+)-(\d+)', 1);　　 100
+
+        Examples: > SELECT regexp_replace('100-200', '(\d+)', 'num'); 　　num-num
+
+        12.repeat复制给的字符串n次
+        Examples: > SELECT repeat('123', 2);　　123123
+
+        13.instr返回截取字符串的位置/locate
+        instr(str, substr) - Returns the (1-based) index of the first occurrence of substr in str.
+
+        Examples:> SELECT instr('SparkSQL', 'SQL');　　6
+
+        Examples:> SELECT locate('bar', 'foobarbar');　　 4
+
+        14.space 在字符串前面加n个空格
+        space(n) - Returns a string consisting of n spaces.
+
+        Examples:> SELECT concat(space(2), '1');　　1
+
+        15.split以某些字符拆分字符串
+        split(str, regex) - Splits str around occurrences that match regex.
+
+        Examples:> SELECT split('oneAtwoBthreeC', '[ABC]');　　　　　　
+
+
+        16.substr截取字符串，substring_index
+        Examples:
+
+        > SELECT substr('Spark SQL', 5);　　k SQL
+        > SELECT substr('Spark SQL', -3);　　SQL
+
+        17.translate 替换某些字符串为
+        Examples: > SELECT translate('AaBbCc', 'abc', '123');　　 A1B2C3
+
+        18.get_json_object
+        get_json_object(json_txt, path) - Extracts a json object from path.
+
+        Examples:> SELECT get_json_object('{"a":"b"}', '$.a');　　b
+
+        19.unhex
+        unhex(expr) - Converts hexadecimal expr to binary.
+
+        Examples:> SELECT decode(unhex('537061726B2053514C'), 'UTF-8');　　 Spark SQL
+
+        20.to_json
+        to_json(expr[, options]) - Returns a json string with a given struct value
+
+        Examples:
+
+        > SELECT to_json(named_struct('a', 1, 'b', 2));　　 {"a":1,"b":2}
+
+        > SELECT to_json(named_struct('time', to_timestamp('2015-08-26', 'yyyy-MM-dd')), map('timestampFormat', 'dd/MM/yyyy'));　　 {"time":"26/08/2015"}
+
+        > SELECT to_json(array(named_struct('a', 1, 'b', 2));　　 [{"a":1,"b":2}]

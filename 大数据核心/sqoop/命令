@@ -1,0 +1,40 @@
+sqoop
+
+    sql -> hadoop 
+        
+  (export <- import)
+mysql ->hive -> hdfs
+
+    1．	Hive-mysql
+    ./sqoop export 
+    --connect jdbc:mysql://ip地址:3306/库 \
+    --username root \
+    --password 123456 \
+    --table 表名 \
+    --export-dir /hive路径  \
+    --fields-terminated-by ‘,’
+
+
+    2.mysql-hdfs
+    ./sqoop import \
+    --connect jdbc:mysql://ip地址 \
+    --username root \
+    --password 123456 \
+    --table 表 \
+    --target-dir fs路径 \（必须是新的地址）
+    --m 1
+
+
+    3.mysql-hive
+    ./sqoop import \
+    --connect jdbc:mysql://ip地址 \
+    --username root \
+    --password 123456 \
+    --table 表 \
+    --fields-terminated-by ‘,’ \
+    --delete-target-dir \
+    --num-mappers 1 \
+    --hive-import \
+    --hive-database 库 \
+    --hive-table 表
+

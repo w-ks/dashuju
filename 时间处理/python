@@ -1,0 +1,11 @@
+time
+    .time()                  用于获取当前时间戳
+    .localtime(time.time())  本地时间的stucttime格式 time.struct_time(tm_year=2016, tm_mon=4, tm_mday=7, tm_hour=10, tm_min=3, tm_sec=27, tm_wday=3, tm_yday=98, tm_isdst=0)
+    .asctime( time.localtime(time.time()) ) 格式化本地时间
+a = "Sat Mar 28 22:24:24 2016"
+    .mktime(time.strptime(a,"%a %b %d %H:%M:%S %Y")) # 将格式字符串转换为时间戳
+时间差
+    a1=datetime.date(2021,10,24)
+    b1=datetime.date(2003,3,26)
+    print(a1.__sub__(b1).days)   日期差
+

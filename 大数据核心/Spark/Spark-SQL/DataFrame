@@ -1,0 +1,193 @@
+https://blog.csdn.net/dabokele/article/details/52802150
+
+    // 设置warehouse目录
+.set("spark.sql.warehouse.dir", "/spark-warehouse/");
+movieExplode lateral view explode(split(category,",")) table_tmp as category_name;
+
+1.连接mysql
+    val sqlContext = new SQLContext(sparkContext)   //构建sql连接类
+    val url = "jdbc:mysql://m000:3306/test"  // 创建sql连接url
+    
+    val jdbcDF = sqlContext.read.format( "jdbc" ).options( // 添加连接选项
+      Map( "url" -> url,   // 传入连接 、用户名、密码、数据库表名
+        "user" -> "root",
+        "password" -> "root",
+        "dbtable" -> "spark_sql_test" )).load()
+
+2.导入mysql(5.6.51)
+    val connectionProperties = new Properties()
+    connectionProperties.put("user","root")
+    connectionProperties.put("password","123456")
+    df1.write.jdbc("jdbc:mysql://localhost:3306/tk?characterEncoding=utf-8","t1",connectionProperties)
+
+3.spark-hive
+    // spark内置hive
+    spark.sql("load data local inpath 'xxx' into table xx")
+    // 
+
+二、DataFrame对象上Action操作
+
+    df.columns.length   返回列数
+    
+    ！！！                          .distinct().collect().map(_ (0))  列转换数组
+
+    1、show(numRows: Int, truncate: Boolean)：展示数据
+
+    　    -- 显示记录条数     对过长字符串的显示格式 
+    2. collect：获取所有数据到数组 // collect方法会将jdbcDF中的所有数据都获取到，并返回一个Array对象。
+            jdbcDF.collect()
+    3. collectAsList：获取所有数据到List  // 功能和collect类似，只不过将返回结构变成了List对象，使用方法如下
+            jdbcDF.collectAsList()
+    4.!! describe(cols: String*)：获取指定字段的统计信息 // 类似pandas的describe 这个方法可以动态的传入一个或多个String类型的字段名，结果仍然为DataFrame对象，用于统计数值类型字段的统计值，比如count, mean, stddev, min, max等。
+　　        使用方法如下，其中c1字段为字符类型，c2字段为整型，c4字段为浮点型
+            jdbcDF .describe("c1" , "c2", "c4" ).show()
+    5.first, head, take, takeAsList：获取若干行记录
+　　这里列出的四个方法比较类似，其中
+        　　（1）first获取第一行记录
+        　　（2）head获取第一行记录，head(n: Int)获取前n行记录
+        　　（3）take(n: Int)获取前n行数据
+        　　（4）takeAsList(n: Int)获取前n行数据，并以List的形式展现
+        　　以Row或者Array[Row]的形式返回一行或多行数据。first和head功能相同。
+        　　take和takeAsList方法会将获得到的数据返回到Driver端，所以，使用这两个方法时需要注意数据量，以免Driver发生OutOfMemoryError
+    6.
+
+三、DataFrame对象上的条件查询和join等操作
+        1.！！where(conditionExpr: String)：SQL语言中where关键字后的条件 传入筛选条件表达式，可以用and和or。得到DataFrame类型的返回结果，
+            jdbcDF.where("id = 1 or c1 = 'b'" ).show()
+        2.！！filter：根据字段进行筛选 传入筛选条件表达式，得到DataFrame类型的返回结果。和where使用条件相同
+            jdbcDF .filter("id = 1 or c1 = 'b'" ).show()
+            errors.filter(col("line").like("%MySQL%")).count()
+                正则表达式过滤 留下语句包含Mysql的
+        3.select：获取指定字段值　　根据传入的String类型字段名，获取指定字段的值，以DataFrame类型返回
+            jdbcDF.select( "id" , "c3" ).show( false)
+        4.！！还有一个重载的select方法，不是传入String类型参数，而是传入Column类型参数。可以实现select id, id+1 from test这种逻辑。
+            jdbcDF.select(jdbcDF( "id" ), jdbcDF( "id") + 1 ).show( false)
+        5.！！selectExpr：可以对指定字段进行特殊处理  可以直接对指定字段调用UDF函数，或者指定别名等。传入String类型参数，得到DataFrame对象。
+        　　示例，查询id字段，c3字段取别名time，c4字段四舍五入：
+            jdbcDF .selectExpr("id" , "c3 as time" , "round(c4)" ).show(false)
+        6. ！！！ col、apply：获取指定字段  遍历每一行可以指定规则  只能获取一个字段，返回对象为Column类型 
+        7.！！ limit方法获取指定DataFrame的前n行记录，得到一个新的DataFrame对象。和take与head不同的是，limit方法不是Action操作。
+            jdbcDF.limit(3).show( false)
+        9.！！ orderBy和sort：按指定字段排序，默认为升序  加个-表示降序排序。sort和orderBy使用方法相同
+            jdbcDF.orderBy(- jdbcDF("c4")).show(false)
+            // 或者
+            jdbcDF.orderBy(jdbcDF("c4").desc).show(false)
+        9. sortWithinPartitions   和上面的sort方法功能类似，区别在于sortWithinPartitions方法返回的是按Partition排好序的DataFrame对象。
+        10.groupBy：根据字段进行group by操作    groupBy方法有两种调用方式，可以传入String类型的字段名，也可传入Column类型的对象。
+            jdbcDF .groupBy("c1" )
+            ！！！groupBy之后可加聚合函数 示例
+                -- jdbc.groupBy("c1" ).count()[max;min;mean;sum;].show()
+
+        11.cube和rollup：group by的扩展     功能类似于SQL中的group by cube/rollup，略。
+
+四、distinct
+    1.!!!distinct：返回一个不包含重复记录的DataFrame　　返回当前DataFrame中不重复的Row记录。该方法和接下来的dropDuplicates()方法不传入指定字段时的结果相同。
+        jdbcDF.distinct()
+    2.!!!dropDuplicates：根据指定字段去重　　根据指定字段去重。类似于select distinct a, b操作
+        jdbcDF.dropDuplicates(Seq("c1"))
+
+五、聚合
+    1.！！！聚合操作调用的是agg方法，该方法有多种调用方式。一般与groupBy方法配合使用。　　以下示例其中最简单直观的一种用法，对id字段求最大值，对c4字段求和。
+        jdbcDF.agg("id" -> "max", "c4" -> "sum")
+    2.！！！unionAll方法：对两个DataFrame进行组合　　类似于SQL中的UNION ALL操作。 
+        jdbcDF.unionALL(jdbcDF.limit(1))  // UNION -两个圆相交的并集 UNION ALL-两个圆的所有元素
+     
+六、join
+　　1.重点来了。在SQL语言中用得很多的就是join操作，DataFrame中同样也提供了join的功能。　　接下来隆重介绍join方法。在DataFrame中提供了六个重载的join方法。
+        （1）、笛卡尔积
+            joinDF1.join(joinDF2)
+        （2）、using一个字段形式        　　下面这种join类似于a join b using column1的形式，需要两个DataFrame中有相同的一个列名，
+            joinDF1.join(joinDF2, "id")
+        （3）、using多个字段形式        　　除了上面这种using一个字段的情况外，还可以using多个字段，如下
+            joinDF1.join(joinDF2, Seq("id", "name")）
+        （4）、指定join类型　　两个DataFrame的join操作有inner, outer, left_outer, right_outer, leftsemi类型。在上面的using多个字段的join情况下，可以写第三个String类型参数，指定join的类型，如下所示
+            joinDF1.join(joinDF2, Seq("id", "name"), "inner"）
+        （5）、使用Column类型来join　　如果不用using模式，灵活指定join字段的话，可以使用如下形式
+            joinDF1.join(joinDF2 , joinDF1("id" ) === joinDF2( "t1_id"))
+
+七、获取指定字段统计信息
+        1.！！ stat方法可以用于计算指定字段或指定字段之间的统计信息，比如方差，协方差等。这个方法返回一个DataFramesStatFunctions类型对象。
+    　　下面代码演示根据c4字段，统计该字段值出现频率在30%以上的内容。在jdbcDF中字段c1的内容为"a, b, a, c, d, b"。其中a和b出现的频率为2 / 6，大于0.3
+            jdbcDF.stat.freqItems(Seq ("c1") , 0.3).show()
+八、获取两个DataFrame中共有的记录
+    　　1.！！ intersect方法可以计算出两个DataFrame中相同的记录，
+            jdbcDF.intersect(jdbcDF.limit(1)).show(false)
+九、获取一个DataFrame中有另一个DataFrame中没有的记录
+        1.except 除..外
+            jdbcDF.except(jdbcDF.limit(1)).show(false)
+十、操作字段名
+        1、withColumnRenamed：重命名DataFrame中的指定字段名
+        　　如果指定的字段名不存在，不进行任何操作。下面示例中将jdbcDF中的id字段重命名为idx。
+                jdbcDF.withColumnRenamed( "id" , "idx" )
+
+        2、withColumn：往当前DataFrame中新增一列
+        　　    whtiColumn(colName: String , col: Column)方法根据指定colName往DataFrame中新增一列，如果colName已存在，则会覆盖当前列。
+        　　    以下代码往jdbcDF中新增一个名为id2的列，
+                    jdbcDF.withColumn("id2", jdbcDF("id")).show( false)
+
+十一、行转列
+        　　有时候需要根据某个字段内容进行分割，然后生成多行，这时可以使用explode方法
+        　　下面代码中，根据c3字段中的空格将字段内容进行分割，分割的内容存储在新的字段c3_中，如下所示
+
+                jdbcDF.explode( "c3" , "c3_" ){time: String => time.split( " " )}
+
+na, randomSplit, repartition, alias, as
+
+instr(str, substr) - 返回第一次出现substrin的（从 1 开始的）索引str。
+        instr('spark','par') -> 2
+
+十二、空值空字符串处理
+
+     // 空值为NaN和Null()   ""、"NaN"和"Null"为空字符串 
+    1.drop：去除指定字段，保留其他字段 可指定保留最小不为空的行
+        drop删除列    df.na.drop(minnonnulls) 返回一个新的DataFrame，删除指定列中包含小于minNonNulls的非空值和非nan值的行。 可删除指定列的空行 
+    2. drop和 na.drop会返回新的DF需定义新变量接收
+
+    3.trim去除空字符串 df.filter("trim(c2)<>''").show 查看全部列中 c2列不为空字符串的行
+
+    4.
+
+
+
+        // 删除所有列的空值和NaN
+        val resNull=data1.na.drop()
+
+        df.na.drop  可指定array列
+            无参不删
+            col 指定列 某列有空删行
+            cols 指定Array(cols) 数组内有一列为空就删除 行
+            how 只指定how ='any'|'all' any当所有列任意一列为空删除行 all当所有列全为空删除行
+            how,cols how='any'|'all' all当指定数组内的所有列都为空删除 行
+            int i 指定数值 返回大于等于i列不为空的 行
+            int i,cols 指定数值和多列 返回指定多列中大于等于i列不为空的 行
+
+
+        df.na.fill  value填充值和可指定array列
+            value 无参所有列中有空值替换为value
+            col,map("abc"->"ABC") 指定列进行替换 将col列中的abc替换成ABC 空值可用fill填充而不是替换
+            col="*",map
+            map 只传入一个map 指定列如果为空返回指定值
+                df.na.fill(Map( "A" -> "unknown", "B" -> 1.0 ))
+                映射的键是列名，映射的值是替换值。该值必须是以下类型：Int，Long，Float，Double，String，Boolean。替换值被强制转换为列数据类型。
+                    例如，以下将“A”列中的空值替换为字符串“unknown”，将“B”列中的空值替换为数值 1.0。
+        
+        df.na.replace()
+            col 替换的列
+            col ="colname" 指定一列时 Map()
+                有问题 替换只能相同类型之间
+            col ="*" Map 所有列 指定替换映射 v1->v2
+            replace("*", Map("NULL" -> null,"sf"->null,""->null," "->null,"\"\""->null))
+                替换所有列 将为"NULL" 的替换为null。。。
+            Map 只指定map 实现列的填充 Map("id"->"id列为空","age"->"age列为空")
+
+
+        //查询空值列
+        data1.filter("gender is null").select("gender").limit(10).show
+        data1.filter( data1("gender").isNull ).select("gender").limit(10).show
+        errors.filter(col("line").like("%MySQL%")).count()
+        data1.filter("gender<>''").select("gender").limit(10).show
+select
+    movie,
+    category_name
+from 
+    movieExplode lateral view explode(split(category,",")) table_tmp as category_name;

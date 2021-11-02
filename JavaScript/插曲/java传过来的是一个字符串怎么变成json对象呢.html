@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>java传过来的是一个字符串怎么变成json对象呢</title>
+</head>
+
+<body>
+
+    <script>
+        // 双引号当中的是一个普通的不能再普通的字符串,这个字符串是java给我们浏览器的 
+        var fromJavaJSON = "{\"name\":\"zhangsan\",\"age\":20}"; //这个不是json对象,是一个字符串
+
+        // 你需要将json格式的字符串转换成json对象
+        // eval函数的作用是:将后面的字符串当做一段js代码解释并执行 
+        window.eval("var stu=" + fromJavaJSON) //重点中的重点,这个可以将json格式的字符串转换成json对象
+            // 转换成json对象的目的是为了取数据.(这样javascript和java之间两个不同的编程语言就完成了数据的交换!) 
+        console.log(stu.name + "," + stu.age)
+        window.eval("var i=0")
+        alert(i)
+    </script>
+</body>
+
+</html>

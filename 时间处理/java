@@ -1,0 +1,33 @@
+一. java.util.Date
+
+    1.获取当前时间
+        Data now = new Date();
+
+    2.常用方法
+        toString  当前日期的string
+
+        getTime   获取时间戳
+
+二.日期 <==> 字符串
+    1. 转换为 "yyyy-/年MM-dd HH:mm:ss" 格式
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
+        //1、日期转字符串 Calendar
+        Calendar calendar = Calendar.getInstance();
+        Date date = calendar.getTime();
+        //2、根据时间戳转换为特定格式 时间字符串
+        String dateStringParse = sdf.format(date);
+
+三、日期加减
+
+    .常用的就下面的几个:
+
+    Date:　　　　　　getTime()、   setTime()
+
+    DateFormat:    getInstance()、getDateInstance()、getDateTimeInstance()、
+    getTimeInstance()
+
+    SimpleDate     Formate:Formate(Date)、   parse(Strings)
+
+    Calendar:　　　 getInstance()、set()、get()、getActualMaximum()、
+    add()、gettime()、setTime(Date)
+

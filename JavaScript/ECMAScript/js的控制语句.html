@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JS的控制语句</title>
+</head>
+
+<body>
+    <!-- 
+        1、js中的控制语句,和java相同,js中除了java的控制语句之外,还有一些特别的:
+            选择结构:
+                if语句 
+                switch语句
+            循环结构: 
+                or 
+                while 
+                do..while
+            转向语句: 
+                break 
+                continue 
+                return
+        2、有哪些特殊的语句呢?
+            了解一下,不需要掌握:
+                for..in语句  和python的 for相同
+                with语句
+-->
+    <script>
+        for (var i = 0; i < 10; i++) {
+            console.log("i=" + i)
+        }
+        var x = new Object
+        x.empno = '111'
+        x.ename = 'SMITH'
+
+        // console.log(x.empno + ',' + x.ename)
+        with(x) {
+            console.log(empno + ',' + ename)
+            console.log(empno + ',' + ename)
+            console.log(empno + ',' + ename)
+            console.log(empno + ',' + ename)
+        }
+    </script>
+</body>
+
+</html>

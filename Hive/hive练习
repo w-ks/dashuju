@@ -1,0 +1,400 @@
+ 1. 窗口函数
+            business 
+    name	 orderdate	cost
+    tony	2017-01-02	15
+    jack	2017-02-03	23
+    tony	2017-01-04	29
+    jack	2017-01-05	46
+    jack	2017-04-06	42
+    tony	2017-01-07	50
+    jack	2017-01-08	55
+    mart	2017-04-08	62
+    mart	2017-04-09	68
+    neil	2017-05-10	12
+    mart	2017-04-11	75
+    neil	2017-06-12	80
+    mart	2017-04-13	94
+
+    （1）查询在2017年4月份购买过的顾客及总人数
+
+        select name,count(*) over() from business where substr(orderdate,1,7)='2017-04' group by name;
+
+    （2）查询顾客的购买明细及月购买总额
+
+        select name,orderdate,cost,sum(cost) over(partition by month(orderdate)) from business;
+
+
+    （3）上述的场景,要将cost按照日期进行累加
+        
+        select name,orderdate,cost, 
+            sum(cost) over() as sample1,
+            sum(cost) over() as sample1,
+            sum(cost) over(partition by name) as sample2,
+            sum(cost) over(partition by name order by orderdate) as sample3,
+            sum(cost) over(partition by name order by orderdate rows between UNBOUNDED PRECEDING and current row ) as sample4 ,
+            sum(cost) over(partition by name order by orderdate rows between 1 PRECEDING and current row) as sample5,
+            sum(cost) over(partition by name order by orderdate rows between 1 PRECEDING AND 1 FOLLOWING ) as sample6,
+            sum(cost) over(partition by name order by orderdate rows between current row and UNBOUNDED FOLLOWING ) as sample7 
+        from business;
+
+
+
+
+    （4）查询顾客上次的购买时间
+
+        select name,orderdate,cost, 
+            lag(orderdate,1,'1900-01-01') over(partition by name order by orderdate ) as time1, 
+            lag(orderdate,2) over (partition by name order by orderdate) as time2 
+        from business;
+
+    （5）查询前20%时间的订单信息
+
+        select * from (
+            select name,orderdate,cost, ntile(5) over(order by orderdate) sorted
+            from business
+        ) t
+        where sorted = 1;
+
+
+2.
+        score
+    孙悟空	语文	87
+    孙悟空	数学	95
+    孙悟空	英语	68
+    大海	语文	94
+    大海	数学	56
+    大海	英语	84
+    宋宋	语文	64
+    宋宋	数学	86
+    宋宋	英语	84
+    婷婷	语文	65
+    婷婷	数学	85
+    婷婷	英语	78
+
+    （1）计算每门学科成绩排名。
+
+        select name,
+            subject,
+            score,
+            rank() over(partition by subject order by score desc) rp1,
+            dense_rank() over(partition by subject order by score desc) rp2,
+            row_number() over(partition by subject order by score desc) rp3
+        from scores;
+        
+
+3.
+        emp_sex
+    name  dept_id	sex
+    悟空	A	男
+    大海	A	男
+    宋宋	B	男
+    凤姐	A	女
+    婷姐	B	女
+    婷婷	B	女
+
+    （1）求出不同部门男女各多少人
+
+            select 
+                dept_id,
+                sum(case sex when '男' then 1 else 0 end) male_count,
+                sum(case sex when '女' then 1 else 0 end) female_count
+            from emp_sex
+            group by dept_id;
+
+        
+4.
+            person_info
+    name	constellation	blood_type
+    孙悟空	    白羊座         	A
+    大海	    射手座         	A
+    宋宋	    白羊座         	B
+    猪八戒	    白羊座         	A
+    凤姐	    射手座         	A
+
+    （1）把星座和血型一样的人归类到一起
+
+        select
+            t1.base,
+            concat_ws('|',collect_set(t1.name)) name
+        from
+            (select
+                name,
+                concat(constellation, ",", blood_type) base
+            from
+                person_info) t1
+        group by t1.base;
+
+
+5.多表连接
+    
+        select e.ename, d.deptno, l. loc_name
+        from   emp e 
+        join   dept d 
+        on     d.deptno = e.deptno 
+        join   location l
+        on     d.loc = l.loc;
+
+6.
+    1.
+
+
+    2.	请根据会员数据文件创建hive表并导入数据，请统计会员表members.csv中年龄在
+        20岁以下、20-35岁、35岁以上的会员人数分别为多少，将结果保存到表：mem_age；
+
+            insert overwrite table mem_age 
+            select 
+                sum(case when age<20 then 1 else 0 end) t1,
+                sum(case when age>=20 and age<35 then 1 else 0 end) t2,
+                sum(case when age>35 then 1 else 0 end) t3
+            from emp_age2;3
+
+
+
+    3.  将员工表中员工信息中缺失值超过2项的员工删除；将已离职人员的信息删除,结果保存到新表emp_new；
+        
+        create table if not exists emp_new as select e.empno,e.empname,e.tel,e.idno,e.monthly_pay,e.gender,e.status,e.dept
+        from(select empno,
+        if(empno is null,1,0)+if(empname is null,1,0)+if(tel is null,1,0)+if(idno is null,1,0)+if(monthly_pay is null,1,0)+if(gender is null,1,0)+if(status is null,1,0)+if(dept is null,1,0) bash
+        from employee) t join employee e on e.empno=t.empno where e.status!=2 and t.bash<2 ;
+
+    4.	利用题目3清洗后的数据表，统计员工的工资分布，工资在5000元以下、5000-10000元，以及1万元以上的
+        员工人数，将结果写入新表emp_sal；
+
+        create table emp_sal as
+        select
+            sum(case when monthly_pay<5000 then 1 else 0 end) m1,
+            sum(case when monthly_pay>=5000 and monthly_pay<= 10000 then 1 else 0 end) m2,
+            sum(case when monthly_pay>10000 then 1 else 0 end) m3
+        from emp_new;
+        
+    5.	利用题目3清洗后的数据表，统计员工的男女比例，写入新表emp_gender；
+
+        create table emp_gender as 
+        select count(*),
+            sum(case when gender='男' then 1 else 0 end) m1,
+            sum(case when gender='男' then 1 else 0 end)/count(*) b1,
+            sum(case when gender='女' then 1 else 0 end) m2,
+            sum(case when gender='女' then 1 else 0 end) /count(*) b2
+        from emp_new;
+    
+    6.	利用会员信息（member.csv），统计会员等级1-5级的各级别会员人数及占总人数的比例，
+        并写入新表mem_lever;
+        create table mem_lever as 
+        select count(*),
+            sum(if(level='1',1,0)) p1,
+            sum(if(level='1',1,0))/count(*) b1,
+            sum(if(level='2',1,0)) p2,
+            sum(if(level='2',1,0))/count(*) b2,
+            sum(if(level='3',1,0)) p3,
+            sum(if(level='3',1,0))/count(*) b3,
+            sum(if(level='4',1,0)) p4,
+            sum(if(level='4',1,0))/count(*) b4,
+            sum(if(level='5',1,0)) p5,
+            sum(if(level='5',1,0))/count(*) b5
+        from members;
+
+       统计各城市的销售额前三名的门店信息
+", "shopname", "address", "shoptype", "promotion","monthly_sales", "monthly_quantity", "monthly_cost
+
+        select * from(
+        select shopname,shopid,city,
+        row_number() over(partition by city order by sale desc) rank
+        from
+            (select 
+            shopname,shopid,
+            substr(address,5,3) city,
+            sumArr(split(monthly_sales,"#")) sale
+        from t1) tmp) t2 where rank <=3
+
+select * from (select subject,name,score,row_number() over (partition by subject order by score desc) as sc" +
+      " from student) t where sc<=3
+
+
+
+    每个人(user)评价(grade后两位)最高的3部电影
+        
+        select user,name from (select *,row_number() over (partition by user order by substr(grade,8,2) desc) rank from oto
+        ) tmp where rank<4
+
+    总得分前5部电影
+
+    select name,sum(score) sco from oto GROUP BY name order by sco desc limit 5
+
+    根据predict分组后 包含的locatition个数
+    select 
+       count(*) a1
+    from 
+        o2 
+    group by 
+        predict
+
+    7.单词计数(文本)
+
+                        word
+            I like word count  sqlContext udf register
+            I don't like rubbish like good person and spark
+            sql hive sql like core mllib explode from json
+            "as"is context count
+
+        
+        select 
+            t1.wor,count(*) rank
+        from
+        (select  
+            explode(split(
+                regexp_replace(word,',|\\.|\\"',""),'[\\s]')) wor
+        from wordCount) t1
+        group by wor
+        order by rank desc;
+
+    8.众数
+        select max(ma) from (select i,count(*) ma from w1 group by i) t1;
+        
+        SELECT i from w1 
+          group by i
+          having count(*)>=select max(ma) from (select i,count(*) ma from w1 group by i) t1;
+        
+        explode law
+如果仅考虑年、月、日数据，忽略时刻信息，
+“申请时间”、“创建时间”与“created_at”、“updated_at”是否为重复属性？
+请编写Spark程序，并在程序中以打印语句输出两对属性对应相等的数据条数。将打印输出结果以及你的结论复制并粘贴至对应报告中。（复制内容需包含打印语句输出结果的上下各 5 行运行日志）。
+示例格式：
+===两组属性同时相等的数据条数为***条===
+结论：“申请时间”、“创建时间”与“created_at”、“updated_at”（是/不是）重复属性。
+如果数据相等的比例超过原始数据集的90%，则剔除属性“created_at”与“updated_at”， 并将结果数据集保存至/diliveryoutput2。
+
+
+        如果 同时相等长度/总长度<90
+        如果 同时相等长度/总长度>90 去除这两列
+        //  chuang_jian_shi_jian==created_at && updated_at==shen_qing_shi_jian
+
+
+        select
+            tm1,tm2,tm3,tm4
+            from
+        (select 
+            substr(chuang_jian_shi_jian,1,9) tm1,
+            substr(created_at,1,9) tm2,
+            substr(updated_at,1,9) tm3,
+            substr(shen_qing_shi_jian,1,9) tm4
+        from 
+            t1) t2
+        where tm1=tm2 and tm3=tm4
+
+        各聚类中在平台A与平台B上架的商家数量，以及同时上架两个平台的商家数量
+
+        平台A数量   平台B数量  同时上架两个平台商家数量
+
+        如果一个聚类中 店铺同时上架A和B平台
+if(rest_type='平台A', A_rst_name,0) ptAname,
+if(rest_type='平台B', B_rst_name,0) ptAname
+        
+
+        (select
+            predict,
+            sum(case rest_type when '平台A' then 1 else 0 end) ptA,
+            sum(case rest_type when '平台B' then 1 else 0 end) ptB
+        from 
+            o2 
+        group by 
+            predict
+        order by 
+        predict) o3
+        
+        select 
+            count(*)
+        from 
+            o2 
+        where 
+            rest_type='平台A'
+
+  相邻元素换座位
+  (1)
+    select 
+        row_number() over( order by if(id%2=0,id-1,id+1) ) as 'id', student
+    from seat ;
+  (2) 
+    select
+        if( id%2=0, id-1,if( id=(select count(*) from seat),id,id+1)) id , student 
+    from seat order by id
+
+
+  连续出现至少三次的数据
+    
+
+提取数组中json的值
+create table as weibo_1 select 
+    get_json_object(jsonstrs,'$[0].be') be,
+from weibo;
+
+
+select  
+(
+        hour(from_unixtime(
+            unix_timestamp(),'yyyy-MM-dd HH:mm:ss'
+            ))-
+        hour(current_date)+(
+            datediff(
+                from_unixtime(unix_timestamp(),'yyyy-MM-dd HH:mm:ss'), 
+        current_date)
+        )*24) as hour_dValue;
+
+
+
+
+（三）为后续分析方便，需要根据要求对数据拆分和建表。 
+创建表result，此表中共4个字段分别为：
+    用户编号user_id,以及
+    从 activity_log 拆分出的 item_id 、category_id 、 brand_id 、 time_stamp 、 action_type。
+select movie, category_name from movieExplode lateral view explode(split(category,",")) table_tmp as category_name;
+
+select user_id,activarr[0] item_id,activarr[2] brand_idactivarr[4] action_type from (select user_id,split(lagic,":") activarr from match_data lateral view explode(split(activity_log,"#")) tbl as lagic) t1;
+
+创建表click，统计每个商品的总点击量，字段包含商品编号：item_id和统计出的该商品总点击量，按照点击量降序排列。
+
+
+create table click as 
+select 
+    item_id,count(*) clicksum
+from result
+where action_type="0"
+group by item_id
+order by clicksum desc;
+
+
+select 
+    item_id,(sum(if(action_type="0",1,0))/count(*)) dianjilv,
+    (sum(if(action_type="1",1,0))/count(*)) jiagoulv,
+    (sum(if(action_type="2",1,0))/count(*)) goumailv,
+    (sum(if(action_type="3",1,0))/count(*)) shoucanglv
+from result
+group by item_id
+
+
+select 
+    item_id,sum(case action_type when '1' then 1 else 0 end) a
+from result
+group by item_id
+
+select 
+    item_id,sum(case action_type when '1' then 1 else 0 end) a
+from result
+group by item_id
+
+select item_id,count(*) from result group by item_id;
+
+select 
+    province,
+    city,
+    round(
+        avg(jiudianzongjianye/fangjianshu)
+    ,6) chuzulv 
+from 
+    external_data_table 
+group by 
+    province,city 
+order by 
+    chuzulv 
+desc limit 10;
+
+

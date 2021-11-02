@@ -1,0 +1,146 @@
+1.语法: 
+    select 
+        字段列表 
+    from
+        表名列表 
+    where
+        条件列表 
+    group by
+        分组字段
+    having 
+        分组之后的条件
+    order by 
+        排序
+    limit 
+        分页限定
+2.基础查询
+    1.多个字段的查询 
+        select字段名1,字段名2...from表名;
+        注意:
+        *如果查询所有字段,则可以使用*来替代字段列表。
+    2.去除重复: 
+        distinct
+    3.计算列
+        一般可以使用四则运算计算一些列的值。(一般只会进行数值型的计算)
+        * ifnull(表达式1,表达式2):null参与的运算,计算结果都为null
+            *表达式1:哪个字段需要判断是否为nul1
+            *如果该字段为nu11后的替换值。
+    4.起别名:
+        as as也可以省略
+
+3条件查询
+
+
+13.3、查询所有字段怎么办?
+        第一种方式:可以把每个字段都写上 
+            select a, b, c, d, e, f... from tablename;
+        第二种方式:可以使用* 
+            select * from dept;
+    
+            这种方式的缺点:
+                1、效率低
+                2、可读性差
+            在实际开发中不建议,可以自己玩没问题
+            你可以在DOS命令窗口中想快速的看一看全表数据可以采用这种方式。
+13.4、给查询的列起别名? 
+    mysql> select deptno, dname as deptname from dept;
+
+    使用as关键字起别名
+    注意:只是将显示的查询结果列名显示为 deptname,原表列名还是叫: dname
+    记住: select语句是永远都不会进行修改操作的。(因为只负责查询)
+    
+    as关键字可以省略吗?可以的 
+        mysgl> select deptno, dname deptname from dept;
+    
+    假设起别名的时候,别名里面有空格,怎么办? 
+        mysql> select deptno, dname dept name from dept;
+        DBMS看到这样的语句,进行SQL语句的编译,不符合语法,编译报错
+        怎么解决? 引号引起来
+        select deptno, dname 'dept name' from dept;
+        select deptno, dname 'dept name' from dept;
+
+ mysql> select ename,sal*12 from emp;/结论段可以使用数学表达式
+
+14.1、什么是条件查询?
+    不是将表中所有数据都查出来，是查询出来符合条件的。
+    语法格式: 
+    select
+        字段1,字段2,字段3 
+    from
+        表名 
+    where
+        条件;
+
+14.2都有哪些条件
+
+    = 等于
+    <>或!= 不等于
+    < 小于
+    <= 小于等于
+    > 大于
+    >= 大于等于 
+    between ... and... 两个值之间,等同于>= and <= 
+    is null 为 null (is not null 不为空)
+    and 并且
+    or 或者
+    in 包含,相当于多个 or (not in不在这个范围中) 
+    not  not可以取非,主要用在is或in中 
+    like  
+        称为模糊查询,支持%或下划线匹配
+        % 匹配任意多个字符
+        下划线：任意一个字符
+        (%是一个特殊的符号，_也是一个特殊符号)
+
+        找出名字中含有o的?
+            select enme from emp where ename like '%o%';
+        找出名字以T结尾的? 
+            select ename from emp where ename like '%T';
+        找出名字以K开始的? 
+            select ename from emp where ename like 'K%';
+        找出第二个字母是A的? 
+            select ename from emp where ename like '_A%';
+        找出第三个字母是R的? 
+            select ename from emp where ename like '__R%';
+        找出名字中有"_"的? 
+            select name from student where name like '%_%'; // 这样不行 
+            select name from student where name like '%\_%' // \转义字符
+
+3.条件查询
+    1. where子句后跟条件
+    2运算符
+        * > 、<、=、>=、=、<> 
+        BETWEEN...AND
+        * IN(集合)
+        * LIKE模糊查询
+            * 占位符:
+            * _:单个任意字符
+            * %:多个任意字符 
+        * IS NULL
+        * and 或 &&
+        * or 或 || 
+        * not 或 !
+
+
+
+where 和 having的区别？
+WHERE条件是首先过滤数据，然后再使用聚合函数，
+但是如果需要在聚合函数或者是分组后的结果进行条件筛选则需要使用HAVING继续过滤。
+
+15.1
+select ename,sal from emp order by sal; // 默认是升序！！！
+select ename,sal from emp order by sal desc; // 指定降序！！！
+select ename,sal from emp order by sal asc; // 指定升序！！！
+select ename,sal from emp order by sal asc,ename asc; // sal在前起主导，只有sal相等的时候才会考虑启用ename排序
+
+了解:根据字段的位置也可以排序 
+select ename, sal from emp order by 2; // 2表示第二列
+第二列是sal按照查询结果的第2列sal排序
+
+了解一下,不建议在开发中这样写,因为不健壮。
+因为列的顺序很容易发生改变列顺序修改之后,2就废了。
+
+15 -综合一点的案例:
+    找出工资在1250到300之间的员工信息,要求按照薪资降序排列
+    select ename, sal from emp where sal between 1250 and 3000 order by sal desc; 
+
+case...when...then...when...then...else...end

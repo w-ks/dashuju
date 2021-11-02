@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+<style>
+    body{
+        background-color: antiquewhite;
+    }
+    #box1{
+        width: 100px;
+        height: 120px;
+        background-color: aqua;
+        position: relative;
+    }
+</style>
+</head>
+<script>
+    window.onload=function(){
+        /**
+         * 拖拽box1元素
+         *  拖拽的流程
+         *      1.当鼠标在被拖拽元素上按下时，开始拖拽  onmousedown
+         *      2.当鼠标移动时被拖拽元素跟随鼠标移动  onmousemove
+         *      3.当鼠标松开时，被拖拽元素固定在当前位置  onmouseup
+         * 
+         */
+        // 获取box1
+        var box1 = document.getElementById("box1")
+        // 为box1绑定一个鼠标按下事件
+        // 当鼠标在被拖拽元素上按下时，开始拖拽 onmousedown
+        box1.onmousedown=function(){
+            // 为document绑定一个onmousemove事件
+            document.onmousemove=function(event){
+                event=event || window.event;
+                // 当鼠标移动时被拖拽元素跟随鼠标移动  onmousemove
+                // 获取鼠标的坐标
+                var left = event.clientX
+                var top = event.clientY
+                console.log('x='+top+"y="+left)
+                // 修改box1的位置
+                box1.style.left =left+"px";
+                box1.style.top =top+"px";
+    
+
+        }
+        box1.onmouseup =function(){
+            document.onmousemove=null
+        }
+
+        }
+    
+    }
+</script>
+<body>
+<div id="box1"></div>
+
+
+</body>
+</html>

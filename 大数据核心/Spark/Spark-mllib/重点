@@ -1,0 +1,185 @@
+ 词向量
+    val word2Vec = new Word2Vec().setInputCol("text").setOutputCol("result")
+    .setVectorSize(3)  把一个words组转换成多少纬度的向量,我们这里选择三个
+    .setMinCount(0)
+    val model = word2Vec.fit(documentDF)
+        
+    Tokenizer
+    Tokenization  是将文本(如一个句子)分解成单个术语(通常是单词)的过程。一个简单的Tokenizer类提供了这个功能。下面的例子展示了如何把句子分成单词序列。
+    RegexTokenizer 允许基于正则表达式(regex)匹配的更高级标记化。默认情况下，参数" pattern " (regex, default: "\\s+")被用作分隔符来分割输入文本。或者，用户可以将参数“gap”设置为false，表示正则表达式“模式”表示“令牌”，而不是拆分间隙，并找到所有匹配的事件
+
+    SparkMl-HashingTF (特征HASH-频数)
+    描述：HashingTF 是一个Transformer，在文本处理中，接收词条的集合然后把这些集合转化成固定长度的特征向量。这个算法在哈希的同时会统计各个词条的词频。
+归一化
+Normalizer的作用范围是每一行，使每一个行向量的范数变换为一个单位范数
+    val normalizer = new Normalizer() .setInputCol("features") .setOutputCol("normFeatures") .setP(1.0)
+    // 正则化每个向量到无穷阶范数
+    val lInfNormData = normalizer.transform(dataFrame, normalizer.p -> Double.PositiveInfinity)
+StandardScaler处理的对象是每一列，也就是每一维特征，将特征标准化为单位标准差或是0均值，或是0均值单位标准差。
+    方法公式：(colX-avgValue)/stddev
+    val scaler = new StandardScaler() .setInputCol("features") .setOutputCol("scaledFeatures") .setWithStd(true) .setWithMean(false)
+MinMaxScaler
+    val scaler = new MinMaxScaler().setInputCol("features").setOutputCol("scaledFeatures")
+MaxAbsScaler
+    val scaler = new MaxAbsScaler().setInputCol("features").setOutputCol("scaledFeatures")
+
+
+RegressionEvaluator 用于回归预测的问题
+
+BinaryClassificationEvaluator 用于二分类问题
+    scoreAndLabels  评分和标签
+    areaUnderROC 
+
+1.  五种分类算法：Classification - 我们设法预测离散值的属性 二分类多分类
+
+    ·决策树分类法，  DecisionTreeClassifier  注意设置 setImpurity("gini"|"entropy") setMaxBins
+    ·随机森林分类法，  RandomForestClassifier  setNumTrees(10)
+    ·朴素的贝叶斯分类算法    NaiveBayes      .setModelType("multinomial")
+    ·逻辑回归分类，  LogisticRegression      .setRegParam(0.3).setElasticNetParam(0.8).setMaxIter(10)    
+    ·基于支持向量机(SVM)的分类器， SVMWithSGD 基于RDD 
+    
+    (traindatas, numIterations=100)      model.clearThreshold()   
+            val scoreAndLabels = test.map { point =>
+            val score = model.predict(point.features)
+            (score, point.label)}
+             // Get evaluation metrics.
+            val metrics = new BinaryClassificationMetrics(scoreAndLabels)
+            val auROC = metrics.areaUnderROC()
+    ·神经网络法，
+    ·k-最近邻法 (kNN)
+    ·模糊分类法
+
+2.1   回归算法  Regression - 我们设法预测连续值的属性
+    ·线性回归   LinearRegression  setStandardization(true).setMaxIter(10)
+                    .setSolver("l-bfgs") 
+                    "系数为 " + model.coefficients
+                    "截距为 " + model.intercept
+                    summary = model.summary
+                    println("训练集平均绝对误差MAE = " + summary1.meanAbsoluteError)
+                    println("训练集均方误差MSE = " + summary1.meanSquaredError)
+                    println("训练集均方误差R2 = " + summary1.r2)
+                    println("训练集均方根误差RMSE = " + summary1.rootMeanSquaredError)
+    ·线性回归
+                //ML目前支持的回归模型：
+                //Linear regression 线性回归
+                //Generalized linear regression 广义线性回归
+                //Decision tree regression 决策树回归
+                //Random forest regression 随机森林回归
+                //Gradient-boosted tree regression 梯度提高树回归
+                //Survival regression生存回归
+                //Isotonic regression保存回归
+
+2.  三种聚类 - 无监督学习
+
+    k均值聚类 (KMeans)  .setK(5).setMaxIter(2000).setInitMode("k-means||")
+        computeCost
+    密度聚类和层次聚类 
+    "鸡尾酒会算法" 
+
+3.  特征工程
+
+    特征选择，特征表达和特征预处理。
+
+4.  基本数据类型：
+
+    ·本地向量:稠密向量稀疏向量
+    ·本地矩阵:稠密矩阵―稀疏矩阵
+
+
+ML指南
+MLlib是Spark的机器学习(ML)库。它的目标是让实际的机器学习变得可扩展和容易。在高层次上，它提供了如下工具:
+    (1)机器学习工具        
+        ML Algorithms (ML算法): 常见的学习算法，如分类、回归、聚类和协同过滤
+        Featurization (特征化): 特征提取、变换、降维和选择
+        Pipelines: 用于构造、评估和调优ML管道的工具
+        Persistence (持久性): saving and load algorithms, models, and Pipelines
+        Utilities (实用工具): 线性代数、统计学、数据处理等.
+
+计算数据相关性
+    1.Pearson 相关系数 [-1,1] 越接近0相关性越弱 反之
+    2.spearman系数
+            Correlation.corr(df, "features", "spearman").head 
+
+   2 特征转换
+        这些特征大部分是分类特征，有些值是连续型，如气温、湿度等特征，使用决策树回归时，
+        技术上可以通过给定类别个数的最大值，自动识别哪些特征作为类别特征，哪些作为连续性特征。
+        这里把不同值小于或等于24的特征作为类别特征，大于24的视为连续性特征，并对分类特征索引化或数值化
+                val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(24)
+        如果使用线性回归 需要对类别使用OneHotEncoder转换二元向量
+
+
+数据预处理
+    StringIndexer           字符串数值化
+    OneHotEncoderEstimator  
+    MinMaxScaler
+    getAs[T]
+    VectorAssembler
+    transform
+    randomSplit
+    evaluate
+    模型评估
+    coefficientStandardErrors 标准差  (方差的算术平方根) σ(xgema) 数据离散程度 
+    degreesOfFreedom           自由度 (计算某一统计量是取值不受限制的变量个数)
+    devianceResiduals          偏差残差 ()  δ
+    explainedVariance         解释方差
+    meanAbsoluteError          平均绝对误差
+    meanSquaredError           均方误差
+    numInstances                数量实例
+    pValues                    p值
+    r2                         判定系数，也称为拟合优度，越接近1越好 
+    r2adj
+    residuals                  残差.show
+    rootMeanSquaredError        均方根误差
+    numIterations               迭代次数
+    objectiveHistory            客观历史
+    explainParams              解释参数
+    
+    熵权法
+
+    new Tokenizer 分词器 设置输入列和输出列 进行分词到数组
+
+    randomSplit 数据集划分
+    StringIndexer
+    IndexToString 将测试集预测的索引类别标签转变回字符串类型的 
+        注意 ！！ setLabels 设置  标签列(stingIndexModel.labels) 输入列 输出列 
+        与StringIndexer对称的是，IndexToString将标签索引列映射回包含字符串的原始标签列。一个常见的用例是使用StringIndexer从标签中生成索引，使用这些索引训练模型，并使用IndexToString从预测索引的列中检索原始标签
+评估函数的确定
+    Spark提供了三种评估函数：
+
+    RegressionEvaluator 用于回归预测的问题
+
+    BinaryClassificationEvaluator 用于二分类问题
+        scoreAndLabels  评分和标签
+        areaUnderROC 
+    
+    MulticlassClassificationEvaluator用于多分类问题
+        new MulticlassClassificationEvaluator().setMetricName("accuracy").evaluate(testPre)
+        注意！！！ 设置 setMetricName("accuracy")
+    ClusteringEvaluator 聚类评估 evaluator.evaluate(df)
+
+决策树
+
+1. 将4个特征整合为一个特征向量
+2. 将类别型class转变为数值型
+3. 将数据切分成两部分，分别为训练数据集和测试数据集
+4. 准备计算法，设置特征列和标签列
+5. 完成建模分析
+6. 预测分析
+7. 模型的校验或保存
+8. 将测试集预测的索引类别标签转变回字符串类型的
+
+线性回归
+//Y=w*x+b 回归系数(w) and 截距(b)
+println(s"Coefficients: ${lrModel.coefficients} Intercept: ${lrModel.intercept}")
+//总结训练集上的模型并打印出一些指标
+val trainingSummary = lrModel.summary
+println(s"numIterations: ${trainingSummary.totalIterations}")
+println(s"objectiveHistory: [${trainingSummary.objectiveHistory.mkString(",")}]")
+trainingSummary.residuals.show()//残差
+println(s"RMSE: ${trainingSummary.rootMeanSquaredError}")//均方根误差
+println(s"r2: ${trainingSummary.r2}")//判定系数，也称为拟合优度，越接近1越好
+        方法公式：(colX-avgValue)/stddev
+
+        方法公式：(colX-minValue)/(maxValue-minValue)
+        方法公式：colX/max(|colValue|)
+        Ln无穷阶范数最终趋近于

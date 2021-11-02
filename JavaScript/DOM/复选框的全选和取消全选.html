@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>复选框的全选和取消全选</title>
+</head>
+
+<body>
+    <script>
+        window.onload = function() {
+            // 为all绑定事件
+            var all1 = document.getElementById('all')
+            var aihaoElt = document.getElementsByName('aihao')
+
+            all1.onclick = function() {
+                // 获取所有的复选框对象
+                // var aihaoElt = document.getElementsByName('aihao')
+                // if (all1.checked) {
+                //     // 遍历数组
+                //     for (var i = 0; i < aihaoElt.length; i++) {
+                //         var aihaochek = aihaoElt[i]
+                //         aihaochek.checked = true
+                //     }
+                // } else {
+                //     // 遍历数组
+                //     for (var i = 0; i < aihaoElt.length; i++) {
+                //         var aihaochek = aihaoElt[i]
+                //         aihaochek.checked = false
+                //     }
+                // }
+
+                // 改良代码
+                for (var i = 0; i < aihaoElt.length; i++) {
+                    aihaoElt[i].checked = all1.checked
+                }
+            }
+
+            // 给每一个name="aihao"复选框绑定鼠标单击事件
+            for (var i = 0; i < aihaoElt.length; i++) {
+                aihaoElt[i].onclick = function() {
+                    // 在这里控制第一个复选框的选中状态
+                    // 第一个复选框选中还是不选中取决于什么?
+                    // 所有的aihao复选框的总数量,如果和总选中的数量相同的时候,第一个复选框选中,反之取消选中 
+                    var count = aihaoElt.length; //总数量 
+                    var checkedCount = 0; // 默认选中的数量是0
+                    for (var i = 0; i < aihaoElt.length; i++) {
+                        if (aihaoElt[i].checked) {
+                            checkedCount++;
+                        }
+                    } // 循环结束之后,所有的被选中的复选框数量就统计完了
+                    // 第一个复选框是选中呢,还是取消选中呢? 
+                    all1.checked = (count == checkedCount);
+
+                }
+
+            }
+
+        }
+    </script>
+
+
+    <input type="checkbox" value="all" id="all">全选
+    <br>
+    <input type="checkbox" name="aihao" value="smoke">抽烟
+    <br>
+    <input type="checkbox" name="aihao" value="drink">喝酒
+    <br>
+    <input type="checkbox" name="aihao" value="perm">烫头
+    <br>
+
+</body>
+
+</html>

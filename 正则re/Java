@@ -1,0 +1,43 @@
+
+import java.util.regex.*
+
+
+    replace(oldstr,newstr) 可替换整个字符串的oldstr
+         | \n     不需要转义
+    
+    replaceAll(regex,newstr) 正则替换 替换内容中含有特殊字符 $ \ 时，需转义。
+         \d => \\d  替换 数字 \s => \\s 替换 空白 正则需转义
+         \ => \\\\  替换 \
+         | =>  \\|  替换 |
+         . =>  \\.  替换 .
+         不转义当正常字符串处理
+
+
+    Pattern.matches(pattern, content);  # 模式匹配 true false
+        matches方法传入正则，与匹配字符串 返回bool 
+
+     Pattern.compile(pattern)
+
+          Pattern Pattern.compile(String regex, int flag)  Pattern.compile函数来实现对指定字符串的截取
+            Pattern.compile函数中两个参数
+                1、regex 表示定义的规则
+                2、flag 表示设置的参数类型，主要包含以下几种情况：
+                （1）Pattern.CASE_INSENSITIVE(?i) 默认情况下，大小写不明感的匹配只适用于US-ASCII字符集。让表达式忽略大小写进行匹配。
+                （2）Pattern.COMMENTS(?x) 此种模式下，匹配时会忽略表达式中空格字符(表达式里的空格，tab，回车)。注释从#开始，一直到这行结束。
+                （3）Pattern.UNIX_LINES(?d) 此种模式下，只有’\n’才被认作一行的中止，并且与’.’，’^’，以及’$’进行匹配。
+                （4）Pattern.MULTILINE(?m) 此种模式下，上箭头和单引号分别匹配一行的开始和结束。此外，’^‘仍然匹配字符串的开始，’’也匹配字符串的结束。默认情况下，这两个表达式仅仅匹配字符串的开始和结束。
+                （5）Pattern.DOTALL：此种模式下，表达式’.‘可以匹配任意字符，包括表示一行的结束符。默认情况下，表达式’.'不匹配行的结束符。
+      // 创建 Pattern 对象
+      Pattern r = Pattern.compile(pattern);
+ 
+      // 现在创建 matcher 对象
+      Matcher m = r.matcher(line);
+      if (m.find( )) {
+         System.out.println("Found value: " + m.group(0) );
+         System.out.println("Found value: " + m.group(1) );
+         System.out.println("Found value: " + m.group(2) );
+         System.out.println("Found value: " + m.group(3) ); 
+      } else {
+         System.out.println("NO MATCH");
+      }
+只要存在字符 (.{0,})北京(.{0,})

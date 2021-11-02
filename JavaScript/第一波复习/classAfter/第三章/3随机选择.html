@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .inputText{
+            height: 500px;
+            width: 600px;
+            font-size: 360px;
+            text-align: center;
+        }
+
+    </style>
+</head>
+
+<script>
+    var timer;
+    function startScroll(){
+        num = Math.floor(Math.random()*60+1)
+        document.myform.myText.value=num;
+        timer = setTimeout("startScroll()",60)
+    }
+    function stopScroll(){
+        clearTimeout(timer)
+    }
+ 
+</script>
+<body>
+    <center>
+        <form name="myform">
+            <input type="text" value=0 name="myText" class="inputText">
+            <input type="button" name="start" value="开始" onclick="startScroll()">
+            <input type="button" name="stop" value="停止" onclick="stopScroll()">
+
+        </form>
+    </center>
+
+
+</body>
+</html>

@@ -1,0 +1,35 @@
+分组查询(非常重要*****非常重要*****非常重要*****非常重要*****非常重要*****非常重要*****)
+group分组
+gourp by 通过什么分组
+group by ... having  分组后having条件过滤，和where类似
+
+将之前的关键字全部组合在一起,来看一下他们的执行顺序? 
+select 
+    ...
+from 
+    ...
+where 
+    ...
+group by 
+    ...
+order by
+    ...
+以上关键字的顺序不能颠倒,需要记忆。
+执行顺序是什么?
+    1.from 
+    2.where 
+    3.group by 
+    4.select 
+    5.order by
+
+重点结论:
+    在一条 select语句当中,如果有 group by语句的话, 
+    select后面只能跟:参加分组的字段,以及分组函数
+    其它的一律不能跟。
+    
+19.4、找出每个部门的最高薪资
+    实现思路是什么?
+        按照部门编号分组,求每一组的最大值 
+        
+        select后面添加ename字段没有意义,另外 oracle会报错 
+        select ename, deptno, max(sal) from emp group by deptno;

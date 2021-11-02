@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        function sum(x, y) {
+            // isNaN 判断‘数据’不是数字吗？ 返回true或false
+            if (isNaN(x) || isNaN(y)) { //  || 或者
+                alert("对不起，参与求和的数据必须都是数字！")
+            } else {
+                alert(x + y)
+            }
+
+        }
+        // Number()函数 强制转换为数字类型
+        alert(Number('213') + 100)
+
+        // parseInt() 相当于python int()函数
+        var c = "345.456中文"
+        alert(parseInt(c))
+
+        // 向上取整
+        // 使用JS内置的math类，ceil()函数
+        alert(Math.ceil(123.001))
+        alert(Math.ceil(123.000))
+    </script>
+
+    <input type="button" value="sum" onclick="sum(true,100)">
+    <input type="button" value="sum" onclick="sum('中国',100)">
+    <input type="button" value="sum" onclick="sum('123',100)">
+
+
+
+</body>
+
+</html>
