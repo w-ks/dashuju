@@ -48,7 +48,19 @@
 
 
         3.输出到mysql
-            
+        1.执行DDL创建表(jdbcoutputTable为Flink表执行环境中的)
+            create table jdbcoutputTable (
+                id varchar(20) not null,
+                cnt bigint not null
+            ) with (
+                'connector.type' = 'jdbc',
+                'connector.url' = 'jdbc:mysql://master:3306/test',
+                'connector.table' ='sensor_count',
+                'connector.driver' = 'com.mysql.jdbc.Driver',
+                'connector.username' ='root',
+                "connector.password' ='123456'
+
+
             
             
             
